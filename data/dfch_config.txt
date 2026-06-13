@@ -1,0 +1,10 @@
+Please note, these keywords are case sensitive for now.
+
+Changes the fontfile to use.
+[FONT_FILE:fonts/MapleMonoNL-CN-Bold.ttf]
+
+[LOG_FILE:logs/dfch.log]
+
+Changes the dictfile to use.
+[DICT_EXACT:dfch_dict_exact.csv]
+[DICT_WORD:dfch_dict_word.csv]
