@@ -2,6 +2,10 @@ name: Build dfch plugin
 
 on: [push, workflow_dispatch]
 
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   build-windows:
     uses: ./.github/workflows/build-plugin-windows.yml
