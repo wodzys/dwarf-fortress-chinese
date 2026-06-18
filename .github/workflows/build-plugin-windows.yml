@@ -65,10 +65,10 @@ jobs:
 
       - name: Copy plugin into DFHack external plugins tree
         run: |
-          mkdir -p ${{ github.workspace }}/dfhack/plugins/external/dfch
-          cp -a ${{ github.workspace }}/plugin/. ${{ github.workspace }}/dfhack/plugins/external/dfch/
+          mkdir -p "${{ github.workspace }}"/dfhack/plugins/external/dfch
+          cp -a "${{ github.workspace }}"/plugin/. "${{ github.workspace }}"/dfhack/plugins/external/dfch/
           echo "add_subdirectory(dfch)" \
-            > ${{ github.workspace }}/dfhack/plugins/external/CMakeLists.txt
+            > "${{ github.workspace }}"/dfhack/plugins/external/CMakeLists.txt
 
       - name: Get sccache path
         shell: pwsh
@@ -125,13 +125,13 @@ jobs:
 
       - name: Prep artifact
         run: |
-          mkdir -p ${{ github.workspace }}/artifact
-          plugin=$(find ${{ github.workspace }}/dfhack/build -name "dfch.plug.dll" -type f | head -1)
+          mkdir -p "${{ github.workspace }}"/artifact
+          plugin=$(find "${{ github.workspace }}"/dfhack/build -name "dfch.plug.dll" -type f | head -1)
           if [ -z "$plugin" ]; then
             echo "::error::dfch.plug.dll not found in build tree"
             exit 1
           fi
-          cp "$plugin" ${{ github.workspace }}/artifact/dfch.plug.dll
+          cp "$plugin" "${{ github.workspace }}"/artifact/dfch.plug.dll
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
