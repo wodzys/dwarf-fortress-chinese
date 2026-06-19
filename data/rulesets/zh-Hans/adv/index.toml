@@ -1,0 +1,13 @@
+base = "adv"
+
+[[rulesets]]
+[rulesets.rules]
+"{burden}" = "{burden}"
+"{getmenu}" = "{getmenu}"
+"{mount}" = "{mount}"
+"{lead}" = "{lead}"
+"{claim}" = "{claim}"
+"{hold}" = "{hold}"
+"{climb}" = "{climb}"
+"{view}" = "{view}"
+"{attack}" = "{attack}"

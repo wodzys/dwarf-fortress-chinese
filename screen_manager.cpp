@@ -71,7 +71,7 @@ namespace Hooks {
         // screentexpos_top_lower_tmp = nullptr;
     }
 
-    void ScreenManager::init() {
+    bool ScreenManager::init() {
         printVersionInfo();
         if(checkDFPointer()) {
             df_sdl_renderer = reinterpret_cast<SDL_Renderer*>(df::global::enabler->renderer->get_renderer());
@@ -86,17 +86,24 @@ namespace Hooks {
             }
         }
         if (!TTFMANAGER.init()) {
-            return;
+            LOGGERMANAGER.getLogger()->error("ScreenManager::init: TTFManager init failed, aborting");
+            return false;
         }
         if (!DICTIONARY.init()) {
-            return;
+            LOGGERMANAGER.getLogger()->error("ScreenManager::init: DictManager init failed, aborting");
+            TTFMANAGER.shutdown();
+            return false;
         }
         if (!RULESETS.init()) {
-            return;
+            LOGGERMANAGER.getLogger()->error("ScreenManager::init: RulesetsManager init failed, aborting");
+            DICTIONARY.shutdown();
+            TTFMANAGER.shutdown();
+            return false;
         }
         SENTENCEDETECTOR.init();
 
         initialized = true;
+        return true;
     }
 
     void ScreenManager::shutdown() {
@@ -323,55 +330,55 @@ namespace Hooks {
         return true;
     }
 
-    std::vector<unsigned char> ScreenManager::filterScreen() {
-        // const unsigned char* screen, const long* screentexpos, const unsigned char* screen_top, const long* screentexpos_top, const long* screentexpos_top_lower
-        // screen_bak, screentexpos_bak, screen_top_bak, screentexpos_top_bak, screentexpos_top_lower_bak
+    // std::vector<unsigned char> ScreenManager::filterScreen() {
+    //     // const unsigned char* screen, const long* screentexpos, const unsigned char* screen_top, const long* screentexpos_top, const long* screentexpos_top_lower
+    //     // screen_bak, screentexpos_bak, screen_top_bak, screentexpos_top_bak, screentexpos_top_lower_bak
 
-        std::vector<unsigned char> result(tile_size);
-        for (size_t y = 0; y < dimy; y++) {
-            bool screentexpos_lower_pre1 = false;
-            bool screentexpos_lower_pre2 = false;
-            for (size_t x = 0; x < dimx; x++) {
-                const size_t tile_row_major = y * dimx + x;
-                const size_t tile_col_major = x * dimy + y;
-                const size_t offset = tile_col_major * 8;
-                unsigned char current_char = ' ';
+    //     std::vector<unsigned char> result(tile_size);
+    //     for (size_t y = 0; y < dimy; y++) {
+    //         bool screentexpos_lower_pre1 = false;
+    //         bool screentexpos_lower_pre2 = false;
+    //         for (size_t x = 0; x < dimx; x++) {
+    //             const size_t tile_row_major = y * dimx + x;
+    //             const size_t tile_col_major = x * dimy + y;
+    //             const size_t offset = tile_col_major * 8;
+    //             unsigned char current_char = ' ';
 
-                // if (top_in_use && screentexpos_top[tile_col_major] == 0) {
-                // if (top_in_use && (screentexpos_top_lower[tile_col_major] != 0)) {
-                if (top_in_use && (screentexpos_top_lower_bak[tile_col_major] != 0)) {
-                    // const unsigned char* s_top = screen_top + offset;
-                    // unsigned char ch_top = s_top[0];
-                    const unsigned char ch_top = screen_top_bak[offset];
-                    // if (valid_chars[ch_top]) {
-                    //     current_char = ch_top;
-                    // }
-                    current_char = cp437_to_simple_ascii[ch_top];
-                } else {
-                // if (screentexpos[tile_col_major] == 0) {
-                    // const unsigned char* s = screen + offset;
-                    // const unsigned char s = screen_bak[offset];
-                    // unsigned char ch = s[0];
-                    const unsigned char ch = screen_bak[offset];
-                    // if (valid_chars[ch]) {
-                    //     current_char = ch;
-                    // }
-                    current_char = cp437_to_simple_ascii[ch];
-                // }
-                    // // TODO[12/28]: also screentexpos_bak
-                    // if (screentexpos_lower_pre2 == screentexpos_lower_pre1 && screentexpos_lower_pre1 != (screentexpos_lower_bak[tile_col_major] == 0 ? false : true) && current_char == ' ') {
-                    //     current_char = '|';
-                    // }
-                    // screentexpos_lower_pre2 = screentexpos_lower_pre1;
-                    // screentexpos_lower_pre1 = (screentexpos_lower_bak[tile_col_major] == 0) ? false : true;
-                }
-                // result[tile_row_major] = static_cast<const char>(current_char);
-                result[tile_row_major] = current_char;
-            }
-        }
+    //             // if (top_in_use && screentexpos_top[tile_col_major] == 0) {
+    //             // if (top_in_use && (screentexpos_top_lower[tile_col_major] != 0)) {
+    //             if (top_in_use && (screentexpos_top_lower_bak[tile_col_major] != 0)) {
+    //                 // const unsigned char* s_top = screen_top + offset;
+    //                 // unsigned char ch_top = s_top[0];
+    //                 const unsigned char ch_top = screen_top_bak[offset];
+    //                 // if (valid_chars[ch_top]) {
+    //                 //     current_char = ch_top;
+    //                 // }
+    //                 current_char = cp437_to_simple_ascii[ch_top];
+    //             } else {
+    //             // if (screentexpos[tile_col_major] == 0) {
+    //                 // const unsigned char* s = screen + offset;
+    //                 // const unsigned char s = screen_bak[offset];
+    //                 // unsigned char ch = s[0];
+    //                 const unsigned char ch = screen_bak[offset];
+    //                 // if (valid_chars[ch]) {
+    //                 //     current_char = ch;
+    //                 // }
+    //                 current_char = cp437_to_simple_ascii[ch];
+    //             // }
+    //                 // // TODO[12/28]: also screentexpos_bak
+    //                 // if (screentexpos_lower_pre2 == screentexpos_lower_pre1 && screentexpos_lower_pre1 != (screentexpos_lower_bak[tile_col_major] == 0 ? false : true) && current_char == ' ') {
+    //                 //     current_char = '|';
+    //                 // }
+    //                 // screentexpos_lower_pre2 = screentexpos_lower_pre1;
+    //                 // screentexpos_lower_pre1 = (screentexpos_lower_bak[tile_col_major] == 0) ? false : true;
+    //             }
+    //             // result[tile_row_major] = static_cast<const char>(current_char);
+    //             result[tile_row_major] = current_char;
+    //         }
+    //     }
 
-        return result;
-    }
+    //     return result;
+    // }
 
     void ScreenManager::filterScreenUpdate(std::span<char> out_buffer) {
         // Blocked-transpose: read column-major DF screen buffers, write row-major to out_buffer.
@@ -395,7 +402,8 @@ namespace Hooks {
                         const size_t tile_col_major = x * col_stride + y * row_stride;
                         const size_t offset = tile_col_major * 8;
 
-                        const unsigned char current_char = (top_in_use && (screentexpos_top_lower_bak[tile_col_major] != 0))
+                        // const unsigned char current_char
+                        unsigned char current_char = (top_in_use && (screentexpos_top_lower_bak[tile_col_major] != 0))
                             ? cp437_to_simple_ascii[screen_top_bak[offset]]
                             : cp437_to_simple_ascii[screen_bak[offset]];
 
@@ -571,9 +579,16 @@ namespace Hooks {
         localization_time_percent = static_cast<uint64_t>(smoothed_value);
     }
 
+    std::string ScreenManager::makeCacheKey(const std::string& source_text, int start_x, int start_y, int col_span) {
+        std::string_view sv(source_text);
+        if (sv.size() > kMaxKeyLength) sv = sv.substr(sv.size() - kMaxKeyLength);
+        return std::format("{}{}{}", sv, start_x + start_y, col_span);
+    }
+
     void ScreenManager::processTranslations() {
         std::string translation;
         unsigned char alignment = 'l';
+        bool is_translated = false;
         normalTranslations.clear();
         freshTranslations.clear();
         customTranslations.clear();
@@ -593,6 +608,7 @@ namespace Hooks {
             uint32_t text_flag = getTextFlag(start_x, start_y);
             // 感觉需要加上，但是为什么之前没有出现问题
             translation.clear();
+            is_translated = false;
 
             // 2-tier translation: exact match → rulesets fallback
             if (DICTIONARY.tryTranslate(sentence.content, translation, alignment)) {
@@ -600,12 +616,14 @@ namespace Hooks {
                 // translation = std::regex_replace(translation, std::regex("\n"), R"(\n)");   // for printing translated text
                 // translation = std::regex_replace(translation, std::regex("\a"), R"(\a)");   // for printing translated text
                 // exact match
+                is_translated = true;
             } else if (auto ruleset_result = RULESETS.translate(sentence.content)) {
                 translation = std::move(*ruleset_result);
                 alignment = 'l';
+                is_translated = true;
             }
 
-            if (!translation.empty()) {
+            if (is_translated) {
                 if (text_flag & SCREENTEXPOS_FLAG_TOP_OF_TEXT) {
                     alignment = 't';
                 } else if (text_flag & SCREENTEXPOS_FLAG_BOTTOM_OF_TEXT) {
@@ -618,7 +636,7 @@ namespace Hooks {
                 std::vector<ColorSpan> color_spans;
                 std::vector<size_t> break_points;
                 if ((alignment == 'l') && !translation.empty()) {
-                    std::tie(default_fg, color_spans) = processWordsColor(sentence.words, translation);
+                    std::tie(default_fg, color_spans) = processWordsColor(sentence.words, translation, sentence.content);
                     if (row_span > 1) {
                         break_points = computeLineBreaks(translation, color_spans, col_span);
                     }
@@ -638,13 +656,14 @@ namespace Hooks {
                 LOGGERMANAGER.getLogger()->debug("Trans[{:2d},{:2d}],[{:2d},{:2d}],[{:2d},{:2d}][{}]:<{}>-<{}>+{}.", start_x, start_y, sentence.end_col, sentence.end_row, row_span, col_span, alignment, sentence.content, translation, wordsStr);
                 // For logging - end
 
+                std::string cache_key = makeCacheKey(sentence.content, start_x, start_y, col_span);
                 if (alignment == 's') {
                     customTranslations.emplace_back(start_x, start_y, row_span, col_span, std::move(sentence.content), std::move(translation), alignment,
-                                                    std::move(default_fg), std::move(color_spans), std::move(break_points));
+                                                    std::move(default_fg), std::move(color_spans), std::move(break_points), std::move(cache_key));
                 } else if (alignment == 't' || alignment == 'b' || alignment == 'd') {
-                    freshTranslations.emplace_back(start_x, start_y, row_span, col_span, std::move(sentence.content), std::move(translation), alignment);
+                    freshTranslations.emplace_back(start_x, start_y, row_span, col_span, std::move(sentence.content), std::move(translation), alignment, std::move(cache_key));
                 } else {
-                    normalTranslations.emplace_back(start_x, start_y, row_span, col_span, std::move(sentence.content), std::move(translation), alignment);
+                    normalTranslations.emplace_back(start_x, start_y, row_span, col_span, std::move(sentence.content), std::move(translation), alignment, std::move(cache_key));
                 }
             } else {
                 // TODO[12/08]: log unprocessed sentences and words with color
@@ -661,7 +680,7 @@ namespace Hooks {
         LOGGERMANAGER.getLogger()->debug("Translation {}+{}+{} processing completed.", normalTranslations.size(), freshTranslations.size(), customTranslations.size());
     }
 
-    std::pair<std::string, std::vector<ScreenManager::ColorSpan>> ScreenManager::processWordsColor(const std::vector<WordData>& words, const std::string& sentence_trans) {
+    std::pair<std::string, std::vector<ScreenManager::ColorSpan>> ScreenManager::processWordsColor(const std::vector<WordData>& words, const std::string& sentence_trans, const std::string& sentence_content) {
         std::vector<std::string> colors;
         colors.reserve(words.size());
         for (const auto& word : words) {
@@ -674,18 +693,52 @@ namespace Hooks {
             return {std::move(default_fg), {}};
         }
 
-        // Step 3: 构建需要着色的翻译词列表（仅非默认色）
+        // Step 3: 将相邻同色且非默认色的词合并为 color group，词组优先查询，单词回退
+        struct ColorGroup {
+            std::vector<size_t> word_indices;
+            std::string color;
+            std::string phrase; // 空格连接的原文词组
+        };
+        std::vector<ColorGroup> groups;
+
+        for (size_t i = 0; i < words.size(); ) {
+            if (colors[i] == default_fg) { ++i; continue; }
+
+            ColorGroup group;
+            group.color = colors[i];
+            while (i < words.size() && colors[i] == group.color) {
+                if (!group.phrase.empty()) group.phrase += ' ';
+                group.phrase += words[i].content;
+                group.word_indices.push_back(i);
+                ++i;
+            }
+            groups.push_back(std::move(group));
+        }
+
         std::vector<std::pair<std::string, std::string>> trans_colors;
         trans_colors.reserve(words.size());
 
-        for (size_t i = 0; i < words.size(); ++i) {
-            if (colors[i] == default_fg) {
-                continue;
-            }
-            std::string word_trans;
-            if (DICTIONARY.wordTranslate(words[i].content, word_trans) && !word_trans.empty()) {
-                LOGGERMANAGER.getLogger()->debug("processWordsColor WordColor[{}]: {}, {}, {}", i, words[i].content, word_trans, colors[i]);
-                trans_colors.emplace_back(std::move(word_trans), std::move(colors[i]));
+        for (const auto& group : groups) {
+            std::string trans;
+            // 多词组必须能在原文中找到对应子串，才视为有效词组
+            bool is_valid_phrase = group.word_indices.size() > 1 && sentence_content.find(group.phrase) != std::string::npos;
+            if (is_valid_phrase && DICTIONARY.wordTranslate(group.phrase, trans) && !trans.empty()) {
+                // 词组级别命中，整个词组作为一个着色单元
+                trans_colors.emplace_back(std::move(trans), group.color);
+            } else {
+                if (is_valid_phrase) {
+                    LOGGERMANAGER.getLogger()->debug("processWordsColor-PhraseNotFound Phrase[{}]", group.phrase);
+                }
+                // 回退：逐词查询（完全兼容现有行为）
+                for (size_t idx : group.word_indices) {
+                    std::string word_trans;
+                    if (DICTIONARY.wordTranslate(words[idx].content, word_trans) && !word_trans.empty()) {
+                        // LOGGERMANAGER.getLogger()->debug("processWordsColor WordColor[{}]: {}, {}, {}", idx, words[idx].content, word_trans, colors[idx]);
+                        trans_colors.emplace_back(std::move(word_trans), group.color);
+                    } else {
+                        LOGGERMANAGER.getLogger()->debug("processWordsColor-NotTranslated WordColor[{}]: {}, {}, {}", idx, words[idx].content, word_trans, colors[idx]);
+                    }
+                }
             }
         }
 
@@ -703,7 +756,7 @@ namespace Hooks {
                 continue; // 未找到，跳过（不影响其他词）
             }
             color_spans.emplace_back(pos, pos + word_text.length(), std::move(word_color));
-            LOGGERMANAGER.getLogger()->debug("processWordsColor ColorSpan[{}]: {}, {}", color_spans.size(), pos, pos + word_text.length());
+            // LOGGERMANAGER.getLogger()->debug("processWordsColor ColorSpan[{}]: {}, {}", color_spans.size(), pos, pos + word_text.length());
             // searchPos = pos + word_text.length();    // 避免中文翻译词序与英文词序不一致
         }
 
@@ -711,7 +764,23 @@ namespace Hooks {
         std::sort(color_spans.begin(), color_spans.end(),
             [](const ColorSpan& a, const ColorSpan& b) { return a.start_idx < b.start_idx; });
 
-        LOGGERMANAGER.getLogger()->debug("processWordsColor ColorSpan: {}, color_spans.size: {}", sentence_trans, color_spans.size());
+        // 合并紧邻同色 ColorSpan，减少渲染时的 surface 分段数
+        if (color_spans.size() > 1) {
+            std::vector<ColorSpan> merged;
+            merged.reserve(color_spans.size());
+            merged.push_back(std::move(color_spans[0]));
+            for (size_t i = 1; i < color_spans.size(); ++i) {
+                if (color_spans[i].color_hex == merged.back().color_hex
+                    && color_spans[i].start_idx == merged.back().end_idx) {
+                    merged.back().end_idx = color_spans[i].end_idx;
+                } else {
+                    merged.push_back(std::move(color_spans[i]));
+                }
+            }
+            color_spans = std::move(merged);
+        }
+
+        // LOGGERMANAGER.getLogger()->debug("processWordsColor ColorSpan: {}, color_spans.size: {}", sentence_trans, color_spans.size());
         return {std::move(default_fg), std::move(color_spans)};
     }
 
@@ -724,7 +793,7 @@ namespace Hooks {
         float char_width_px = static_cast<float>(trans_text_width_px) / sentence_trans.length();
         int limit_line_char_count = limit_line_width_px / char_width_px;
         if (limit_line_char_count <= 4) return {};
-        LOGGERMANAGER.getLogger()->debug("computeLineBreaks limit_line_char_count: {}", limit_line_char_count);
+        // LOGGERMANAGER.getLogger()->debug("computeLineBreaks limit_line_char_count: {}", limit_line_char_count);
 
         auto ranges = protectedRanges;
         std::sort(ranges.begin(), ranges.end(), [](const ColorSpan& a, const ColorSpan& b) {
@@ -767,7 +836,7 @@ namespace Hooks {
                 }
             }
             breaks.push_back(safeEnd);
-            LOGGERMANAGER.getLogger()->debug("computeLineBreaks break: {}", safeEnd);
+            // LOGGERMANAGER.getLogger()->debug("computeLineBreaks break: {}", safeEnd);
             pos = safeEnd;
         }
 
@@ -856,11 +925,7 @@ namespace Hooks {
                 continue;
             }
 
-            // Try: Reduce key length
-            // std::string source_key = std::format("{}:{}:{}", pending_trans.source_text, pending_trans.start_x, pending_trans.start_y);
-            std::string_view source_text = pending_trans.source_text;
-            if (source_text.size() > kMaxKeyLength) source_text = source_text.substr(source_text.size() - kMaxKeyLength);
-            std::string source_key = std::format("{}{}{}", source_text, pending_trans.start_x+pending_trans.start_y, pending_trans.col_span);
+            const auto& source_key = pending_trans.cache_key;
 
             SDL_Color text_fg = getForegroundColor(pending_trans.start_x, pending_trans.start_y);
 
@@ -878,7 +943,7 @@ namespace Hooks {
                 SDLTexturePtr(textTexture, SDLTextureDeleter{})
             );
             multi_asset.default_fg = text_fg;
-            textTextureCache.put(std::move(source_key), std::move(multi_asset));
+            textTextureCache.put(source_key, std::move(multi_asset));
             // LOGGERMANAGER.getLogger()->debug("Created texture for translation: '{}' -> '{}'", pending_trans.source_text, pending_trans.target_text);
         }
         // LOGGERMANAGER.getLogger()->debug("Translation textures creation completed. Total textures created: {:zu}", normalTextures.size());
@@ -893,10 +958,7 @@ namespace Hooks {
                 continue;
             }
 
-            // Try: Reduce key length
-            std::string_view source_text = pending_trans.source_text;
-            if (source_text.size() > kMaxKeyLength) source_text = source_text.substr(source_text.size() - kMaxKeyLength);
-            std::string source_key = std::format("{}{}{}", source_text, pending_trans.start_x+pending_trans.start_y, pending_trans.col_span);
+            const auto& source_key = pending_trans.cache_key;
 
             SDL_Color text_fg = getForegroundColor(pending_trans.start_x, pending_trans.start_y);
 
@@ -919,7 +981,7 @@ namespace Hooks {
                 SDLTexturePtr(textTexture, SDLTextureDeleter{})
             );
             multi_asset.default_fg = text_fg;
-            textTextureCache.put(std::move(source_key), std::move(multi_asset));
+            textTextureCache.put(source_key, std::move(multi_asset));
         }
     }
 
@@ -929,11 +991,7 @@ namespace Hooks {
                 continue;
             }
 
-            // Try: Reduce key length
-            // std::string source_key = std::format("{}:{}:{}", pending_trans.source_text, pending_trans.start_x, pending_trans.start_y);
-            std::string_view source_text = pending_trans.source_text;
-            if (source_text.size() > kMaxKeyLength) source_text = source_text.substr(source_text.size() - kMaxKeyLength);
-            std::string source_key = std::format("{}{}{}", source_text, pending_trans.start_x+pending_trans.start_y, pending_trans.col_span);
+            const auto& source_key = pending_trans.cache_key;
 
             SDL_Color default_fg;
             if (!pending_trans.default_fg.empty()) {
@@ -957,7 +1015,7 @@ namespace Hooks {
             }
             multi_asset.default_fg = default_fg;
             if (!multi_asset.empty()) {
-                textTextureCache.put(std::move(source_key), std::move(multi_asset));
+                textTextureCache.put(source_key, std::move(multi_asset));
             } else {
                 LOGGERMANAGER.getLogger()->warn("Failed to generate texture for: {}", source_key);
             }
@@ -1260,11 +1318,7 @@ namespace Hooks {
             renderRect.x = pending_trans.start_x * dispx_z + origin_x;
             renderRect.y = pending_trans.start_y * dispy_z + origin_y;
 
-            // Try: Reduce key length
-            // std::string source_key = std::format("{}:{}:{}", pending_trans.source_text, pending_trans.start_x, pending_trans.start_y);
-            std::string_view source_text = pending_trans.source_text;
-            if (source_text.size() > kMaxKeyLength) source_text = source_text.substr(source_text.size() - kMaxKeyLength);
-            std::string source_key = std::format("{}{}{}", source_text, pending_trans.start_x+pending_trans.start_y, pending_trans.col_span);
+            const auto& source_key = pending_trans.cache_key;
 
             if (auto multi_asset = textTextureCache.get(source_key)) {
                 if (!multi_asset->lines.empty() && multi_asset->lines[0].texture) {
@@ -1289,11 +1343,7 @@ namespace Hooks {
             renderRect.x = pending_trans.start_x * dispx_z + origin_x;
             renderRect.y = pending_trans.start_y * dispy_z + origin_y;
 
-            // Try: Reduce key length
-            // std::string source_key = std::format("{}:{}:{}", pending_trans.source_text, pending_trans.start_x, pending_trans.start_y);
-            std::string_view source_text = pending_trans.source_text;
-            if (source_text.size() > kMaxKeyLength) source_text = source_text.substr(source_text.size() - kMaxKeyLength);
-            std::string source_key = std::format("{}{}{}", source_text, pending_trans.start_x+pending_trans.start_y, pending_trans.col_span);
+            const auto& source_key = pending_trans.cache_key;
 
             if (auto multi_asset = textTextureCache.get(source_key)) {
                 if (!multi_asset->lines.empty() && multi_asset->lines[0].texture) {
@@ -1322,11 +1372,7 @@ namespace Hooks {
             int start_x_px = pending_trans.start_x * dispx_z + origin_x;
             int start_y_px = pending_trans.start_y * dispy_z + origin_y;
 
-            // Try: Reduce key length
-            // std::string source_key = std::format("{}:{}:{}", pending_trans.source_text, pending_trans.start_x, pending_trans.start_y);
-            std::string_view source_text = pending_trans.source_text;
-            if (source_text.size() > kMaxKeyLength) source_text = source_text.substr(source_text.size() - kMaxKeyLength);
-            std::string source_key = std::format("{}{}{}", source_text, pending_trans.start_x+pending_trans.start_y, pending_trans.col_span);
+            const auto& source_key = pending_trans.cache_key;
 
             if (auto multi_asset = textTextureCache.get(source_key)) {
                 if (!multi_asset->lines.empty()) {

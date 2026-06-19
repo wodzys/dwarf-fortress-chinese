@@ -35,7 +35,7 @@ namespace Hooks {
             return instance;
         }
 
-        void init();
+        bool init();
         void shutdown();
         void screenChanged(std::string screen_name);
         void doCommand(const std::vector<std::string>& commands);
@@ -173,10 +173,11 @@ namespace Hooks {
             std::string source_text;
             std::string target_text;
             unsigned char alignment;     // alignment (l: left-aligned, c: centered)
-            TextTranslationData(int start_x, int start_y, int row_span, int col_span, const std::string& source_text, const std::string& target_text, unsigned char align = 'l')
-                : start_x(start_x), start_y(start_y), row_span(row_span), col_span(col_span), source_text(source_text), target_text(target_text), alignment(align) {}
-            TextTranslationData(int sx, int sy, int rs, int cs, std::string&& source, std::string&& target, unsigned char align = 'l')
-                : start_x(sx), start_y(sy), row_span(rs), col_span(cs), source_text(std::move(source)), target_text(std::move(target)), alignment(align) {}
+            std::string cache_key;       // Precomputed texture cache key (set in processTranslations)
+            TextTranslationData(int start_x, int start_y, int row_span, int col_span, const std::string& source_text, const std::string& target_text, unsigned char align = 'l', std::string key = {})
+                : start_x(start_x), start_y(start_y), row_span(row_span), col_span(col_span), source_text(source_text), target_text(target_text), alignment(align), cache_key(std::move(key)) {}
+            TextTranslationData(int sx, int sy, int rs, int cs, std::string&& source, std::string&& target, unsigned char align = 'l', std::string key = {})
+                : start_x(sx), start_y(sy), row_span(rs), col_span(cs), source_text(std::move(source)), target_text(std::move(target)), alignment(align), cache_key(std::move(key)) {}
 
             TextTranslationData(TextTranslationData&&) = default;
             TextTranslationData& operator=(TextTranslationData&&) = default;
@@ -204,9 +205,10 @@ namespace Hooks {
                 unsigned char align,
                 std::string default_fg,
                 std::vector<ColorSpan> color_spans = {},
-                std::vector<size_t> break_points = {}
+                std::vector<size_t> break_points = {},
+                std::string key = {}
             ) : TextTranslationData(start_x, start_y, row_span, col_span,
-                                    std::move(source_text), std::move(target_text), align),
+                                    std::move(source_text), std::move(target_text), align, std::move(key)),
                 default_fg(std::move(default_fg)),
                 color_spans(std::move(color_spans)),
                 break_points(std::move(break_points))
@@ -342,6 +344,12 @@ namespace Hooks {
             map_char(240, '=');  // ≡
             map_char(225, 'g');  // Γ
 
+            // others
+            map_char(174, '<');
+            map_char(175, '>');
+            map_char(11, 'M');
+            map_char(12, 'F');
+
             return lut;
         }();
 
@@ -376,7 +384,7 @@ namespace Hooks {
         // Process SentenceDetector results and match translations
         void processTranslations();
         // bool processWordsColor(const std::vector<WordData>& words, std::string& sentence_trans);
-        std::pair<std::string, std::vector<ColorSpan>> processWordsColor(const std::vector<WordData>& words, const std::string& sentence_trans);
+        std::pair<std::string, std::vector<ColorSpan>> processWordsColor(const std::vector<WordData>& words, const std::string& sentence_trans, const std::string& sentence_content);
         std::vector<size_t> computeLineBreaks(const std::string& sentence_trans, const std::vector<ColorSpan>& protectedRanges, size_t col_span);
 
         // Reset text render area to space characters
@@ -390,7 +398,7 @@ namespace Hooks {
         bool checkDFPointer();
         bool updateScreenInfo();
         // Extract valid characters from screen array
-        std::vector<unsigned char> filterScreen();
+        // std::vector<unsigned char> filterScreen();
         // Blocked-transpose version: reads column-major input, writes row-major to out_buffer.
         // out_buffer must be at least tile_size bytes. BLOCK_ROWS/BLOCK_COLS are sized to keep
         // each tile block within L1 cache.
@@ -430,6 +438,7 @@ namespace Hooks {
         void printScreenInfo() const;
         void printVersionInfo() const;
 
+        static std::string makeCacheKey(const std::string& source_text, int start_x, int start_y, int col_span);
         inline bool isContinuationByte(unsigned char b) {
             return (b & 0xC0) == 0x80;
         }

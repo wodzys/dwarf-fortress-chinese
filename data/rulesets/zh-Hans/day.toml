@@ -2,16 +2,16 @@ base = "day"
 
 [[rulesets]]
 [rulesets.rules]
-"{%number}{number} {month}"="{%number}{number} {month}"
-"{^0} {season}" = "{^0}{season}"
+"{#digits}{number} {month}"="{#digits}{number} {month}"
+"{^0}{season}" = "{^0}{season}"
 
 [[rulesets]]
 name = "number"
 [rulesets.rules]
-"st" = "号"
-"nd" = "号"
-"rd" = "号"
-"th" = "号"
+"st" = "日"
+"nd" = "日"
+"rd" = "日"
+"th" = "日"
 
 [[rulesets]]
 name = "season"
@@ -24,9 +24,9 @@ name = "season"
 [[rulesets]]
 name = "^0"
 [rulesets.rules]
-"Early" = "孟"
-"Mid" = "仲"
-"Late" = "季"
+"Early " = "孟"
+"Mid-" = "仲"
+"Late " = "季"
 
 [[rulesets]]
 name = "month"

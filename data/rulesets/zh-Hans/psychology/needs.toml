@@ -1,0 +1,113 @@
+base = "psychology::needs"
+
+[[rulesets]]
+[rulesets.rules]
+"{main}" = "{main}"
+
+[[rulesets]]
+name = "main"
+[rulesets.rules]
+"Overall,{sex}{kind}{things}{tail}" = "总体上来看，{sex}{kind}{things}{tail}"
+"{sex}{things}{tail}" = "{sex}{things}{tail}"
+
+[[rulesets]]
+name = "things"
+[rulesets.rules]
+" very focused with satisfied needs" = "对已满足的需求非常关注"
+" quite focused with satisfied needs" = "对已满足的需求有些关注"
+" somewhat focused with satisfied needs" = "对已满足的需求稍有关注"
+" badly distracted by unmet needs" = "因需求未满足而严重分心"
+" distracted by unmet needs" = "因需求未满足而难以专注"
+" unfocused by unmet needs" = "因需求未满足而有些分心"
+" untroubled by unmet needs" = "没有因需求未满足而受到干扰"
+" is unfettered {things::after}" = "{things::after}感觉轻松自在"
+" is level-headed {things::after}" = "{things::after}感觉头脑清醒"
+" is untroubled {things::after}" = "{things::after}感觉内心平静"
+" is not distracted {things::after}" = "{things::after}没有受到干扰"
+" is unfocused {things::after}" = "{things::after}感觉心不在焉"
+" is distracted {things::after}" = "{things::after}感觉心神不宁"
+" is badly distracted {things::after}" = "{things::after}感觉精神涣散"
+
+[[rulesets]]
+name = "things::after"
+[rulesets.rules]
+"after spending time with people" = "在与人共度时光之后"
+"after being away from people" = "在远离人群之后"
+"after drinking" = "在喝酒之后"
+"after being kept from alcohol" = "因没有酒喝"
+"after communing with" = "在和交流之后"
+"after meditation" = "在冥想后"
+"after being unable to pray" = "因无法祈祷"
+"after staying occupied" = "在持续忙碌之后"
+"after being unoccupied" = "因无所事事"
+"after admiring art" = "在欣赏艺术品之后"
+"after being unable to admire art" = "因无法欣赏艺术品"
+"after doing something creative" = "在完成一项创作后"
+"after doing nothing creative" = "因创意无处施展"
+"after doing something exciting" = "在做了令人兴奋的事情之后"
+"after leading an unexciting life" = "因平淡无奇的生活"
+"after learning something" = "在学到东西之后"
+"after not learning anything" = "因没有学到任何东西"
+"after being with family" = "在与家人共度之后"
+"after being away from family" = "因远离家人"
+"after being with friends" = "在和朋友共度之后"
+"after being away from friends" = "因远离朋友"
+"after hearing eloquent speech" = "在听到雄辩的演讲后"
+"after being unable to hear eloquent speech" = "因听不到雄辩的演讲"
+"after upholding tradition" = "在坚持传统之后"
+"after being away from traditions" = "因远离传统"
+"after self-examination" = "在自我反省之后"
+"after a lack of introspection" = "因缺少反省"
+"after making merry" = "在纵情享乐之后"
+"after being unable to make merry" = "因无法尽情享乐"
+"after practicing a craft" = "在练习工艺后"
+"after being unable to practice a craft" = "因无法练习工艺"
+"after practicing a martial art" = "在练习武术后"
+"after being unable to practice a martial art" = "因无法练习武术"
+"after practicing a skill" = "在练习技能后"
+"after being unable to practice a skill" = "因无法练习技能"
+"after taking it easy" = "在放轻松之后"
+"after being unable to take it easy" = "因无法自我放松"
+"after making romance" = "在制造浪漫后"
+"after being unable to make romance" = "因无法制造浪漫"
+"after seeing animals" = "在看到动物后"
+"after being away from animals" = "因远离动物"
+"after seeing a great beast" = "在看到巨兽后"
+"after being away from great beasts" = "因远离巨兽"
+"after acquiring something" = "在获得一些东西后"
+"after being unable to acquire something" = "因无法获得某些东西"
+"after eating a good meal" = "在享用美食之后"
+"after a lack of decent meals" = "因缺乏体面的饭菜"
+"after fighting" = "在战斗之后"
+"after being unable to fight" = "因无法战斗"
+"after causing trouble" = "在制造麻烦之后"
+"after a lack of trouble-making" = "因没能制造麻烦"
+"after arguing" = "在争论之后"
+"after being unable to argue" = "因无处争论"
+"after being extravagant" = "在奢侈挥霍之后"
+"after being unable to be extravagant" = "因无处挥霍"
+"after wandering" = "在徘徊之后"
+"after being unable to wander" = "因无处徘徊"
+"after helping somebody" = "在帮助某人之后"
+"after being unable to help anybody" = "因无法帮助任何人"
+"after thinking abstractly" = "在抽象地思考之后"
+"after a lack of abstract thinking" = "因缺乏抽象思维"
+
+[[rulesets]]
+name = "sex"
+[rulesets.rules]
+" he" = "他"
+" she" = "她"
+"He" = "他"
+"She" = "她"
+
+[[rulesets]]
+name = "kind"
+[rulesets.rules]
+" is" = ""
+
+[[rulesets]]
+name = "tail"
+optional = true
+[rulesets.rules]
+"." = "。"

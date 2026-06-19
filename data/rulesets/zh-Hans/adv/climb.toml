@@ -1,0 +1,71 @@
+base = "adv::climb"
+
+[[rulesets]]
+[rulesets.rules]
+"Climb to {place}{direction}" = "攀向{place}{direction}"
+
+[[rulesets]]
+name = "place"
+[rulesets.rules]
+"{::tiles}" = "{::tiles}"
+
+[[rulesets]]
+name = "direction"
+optional = true
+[rulesets.rules]
+" ({direction::^0}{direction::main}{direction::$0}{direction::$1})" = "({direction::^0}{direction::main}{direction::$0}{direction::$1})"
+
+[[rulesets]]
+name = "direction::main"
+[rulesets.rules]
+" holding {NS}{EW}" = ",抓着{NS}{EW}"
+" releasing hold" = ",松开抓住的手"
+
+[[rulesets]]
+name = "direction::^0"
+[rulesets.rules]
+"{height}" = "{height}"
+"{NS}{EW}" = "{NS}{EW}"
+
+[[rulesets]]
+name = "direction::$0"
+optional = true
+[rulesets.rules]
+"/{height}" = "/{height}"
+
+[[rulesets]]
+name = "direction::$1"
+optional = true
+[rulesets.rules]
+"/Air" = "/空气"
+
+[[rulesets]]
+name = "tit"
+optional = true
+[rulesets.rules]
+"/" = "/"
+
+[[rulesets]]
+name = "height"
+optional = true
+[rulesets.rules]
+"Above" = "上方"
+"Below" = "下方"
+
+[[rulesets]]
+name = "EW"
+optional = true
+[rulesets.rules]
+"E" = "E"
+"W" = "W"
+"East" = "东方"
+"West" = "西方"
+
+[[rulesets]]
+name = "NS"
+optional = true
+[rulesets.rules]
+"N" = "N"
+"S" = "S"
+"North" = "北方"
+"South" = "南方"

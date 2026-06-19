@@ -1,0 +1,16 @@
+base = "adv::mount"
+
+[[rulesets]]
+[rulesets.rules]
+"Mount {name}{direction}" = "骑上{name}{direction}"
+
+[[rulesets]]
+name = "name"
+[rulesets.rules]
+"{::creatures::caste::name}" = "{::creatures::caste::name}"
+
+[[rulesets]]
+name = "direction"
+optional = true
+[rulesets.rules]
+"{::adv::direction}" = "{::adv::direction}"

@@ -3,7 +3,6 @@ base = "materials"
 [[rulesets]]
 [rulesets.rules]
 "{^prefix}{state}" = "{^prefix}{state}"
-"{job}" = "{job}"
 
 [[rulesets]]
 name = "^prefix"

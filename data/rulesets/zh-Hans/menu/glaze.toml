@@ -1,0 +1,18 @@
+base = "menu::glaze"
+
+[[rulesets]]
+[rulesets.rules]
+"{kind}{main}" = "{main}{kind}"
+
+[[rulesets]]
+name = "kind"
+[rulesets.rules]
+"Glaze" = "上釉"
+
+[[rulesets]]
+name = "main"
+[rulesets.rules]
+" clay/stone craft" = "为黏土/石头工艺品"
+" clay/stone jug" = "为黏土/石头壶"
+" clay/stone statue" = "为黏土/石头雕像"
+" large clay/stone pot" = "为黏土/石头大罐"

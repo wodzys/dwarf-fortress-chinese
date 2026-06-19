@@ -164,7 +164,7 @@ name = "walls::$0"
 [[rulesets]]
 name = "pillar_fortifications"
 [rulesets.rules]
-"{pillar_fortifications::^0}{pillar_fortifications::^1}{pillar_fortifications::main}{pillar_fortifications::$0}" = "{pillar_fortifications::^0}{pillar_fortifications::^1}{pillar_fortifications::main}{pillar_fortifications::$0}"
+"{pillar_fortifications::^0}{pillar_fortifications::main}{pillar_fortifications::$0}" = "{pillar_fortifications::^0}{pillar_fortifications::main}{pillar_fortifications::$0}"
 
 [[rulesets]]
 name = "pillar_fortifications::^0"
@@ -172,18 +172,6 @@ optional = true
 [rulesets.rules]
 "Exposed " = "裸露"
 "{prefix::may_engrave} " = "{prefix::may_engrave}"
-
-[[rulesets]]
-name = "pillar_fortifications::^1"
-optional = true
-[rulesets.rules]
-"{pillar_fortifications::^1::prefix}reinforced " = "{pillar_fortifications::^1::prefix}加固的"
-
-[[rulesets]]
-name = "pillar_fortifications::^1::prefix"
-optional = true
-[rulesets.rules]
-"{::materials}-" = "{::materials}-"
 
 [[rulesets]]
 name = "pillar_fortifications::main"
@@ -300,7 +288,7 @@ name = "prefix::updown"
 [[rulesets]]
 name = "constructed"
 [rulesets.rules]
-"{constructed::^0}{constructed::main}{constructed::$0}" = "{constructed::^0}{constructed::main}{constructed::$0}"
+"{constructed::^0}{constructed::^1}{constructed::main}{constructed::$0}" = "{constructed::^0}{constructed::^1}{constructed::main}{constructed::$0}"
 
 [[rulesets]]
 name = "constructed::^0"
@@ -308,6 +296,18 @@ optional = true
 [rulesets.rules]
 "rough " = "粗糙"
 "shoddy" = "劣质"
+
+[[rulesets]]
+name = "constructed::^1"
+optional = true
+[rulesets.rules]
+"{constructed::^1::prefix}reinforced " = "{constructed::^1::prefix}加固的"
+
+[[rulesets]]
+name = "constructed::^1::prefix"
+optional = true
+[rulesets.rules]
+"{::materials}-" = "{::materials}-"
 
 [[rulesets]]
 name = "constructed::main"

@@ -128,22 +128,26 @@ namespace Hooks {
     //     ORIG_FUNC(dfhooks_update)();
     // }
 
-    void init() {
-        if(hook_func_init_done) return;
+    bool init() {
+        if(hook_func_init_done) return true;
         auto start = std::chrono::high_resolution_clock::now();
 
         LOGGERMANAGER.init(Config::getLogFile().string());
         if(!g_sdl2.loadFunc()){
             LOGGERMANAGER.getLogger()->error("Hooks::init: g_sdl2.loadFunc failed");
-            return;
+            return false;
         }
-        SCREENMANAGER.init();
+        if(!SCREENMANAGER.init()){
+            LOGGERMANAGER.getLogger()->error("Hooks::init: SCREENMANAGER.init failed");
+            return false;
+        }
 
         auto end = std::chrono::high_resolution_clock::now();
         auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
         dfch_init_elapsed_us = elapsed_us.count();
         LOGGERMANAGER.getLogger()->info("SCREENMANAGER.init elapsed time: {} us", dfch_init_elapsed_us);
         hook_func_init_done = true;
+        return true;
 
         // // 初始化OffsetManager并保存状态
         // bool init_success = (OFFSET_MANAGER.initialize(out) == CR_OK);

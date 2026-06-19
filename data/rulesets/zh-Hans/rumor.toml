@@ -1,0 +1,62 @@
+base = "rumor"
+
+[[rulesets]]
+[rulesets.rules]
+"Summarize the conflict in which {A} attacked {B}" = "大致讲述一下{A}攻击{B}的这场冲突"
+" (This occurred {Time} in {GroupA})" = " (于{Time}发生在{GroupA})"
+"Spread rumor of {GroupA::prefix}{GroupA}'s presence in {GroupB::prefix}{GroupB}" = "散布{GroupA::prefix}{GroupA}出现在{GroupB::prefix}{GroupB}的传言"
+
+[[rulesets]]
+name = "A"
+[rulesets.rules]
+"you" = "你"
+"{::dwarf_language::none::prename} {::english_name::name::last}" = "{::dwarf_language::none::prename}·{::english_name::name::last}"
+"a {::creatures::caste::singular}" = "一只{::creatures::caste::singular}"
+
+[[rulesets]]
+name = "B"
+[rulesets.rules]
+"you" = "你"
+"{::dwarf_language::none::prename} {::english_name::name::last}" = "{::dwarf_language::none::prename}·{::english_name::name::last}"
+"a {::creatures::caste::singular}" = "一只{::creatures::caste::singular}"
+
+[[rulesets]]
+name = "Place"
+[rulesets.rules]
+"{::english_name::name::last}" = "{::english_name::name::last}"
+
+[[rulesets]]
+name = "Site"
+[rulesets.rules]
+"{::english_name::name::place}" = "{::english_name::name::place}"
+
+[[rulesets]]
+name = "Time"
+[rulesets.rules]
+"a few days ago" = "几天前"
+"a week ago" = "一周前"
+
+[[rulesets]]
+name = "GroupA::prefix"
+optional = true
+[rulesets.rules]
+"{A}" = "{A}"
+"{::english_name::name::last} " = "{::english_name::name::last} "
+
+[[rulesets]]
+name = "GroupB::prefix"
+optional = true
+[rulesets.rules]
+"{::english_name::name::last} " = "{::english_name::name::last} "
+
+[[rulesets]]
+name = "GroupA"
+[rulesets.rules]
+"{Place}" = "{Place}"
+"{Site}" = "{Site}"
+
+[[rulesets]]
+name = "GroupB"
+[rulesets.rules]
+"{Place}" = "{Place}"
+"{Site}" = "{Site}"

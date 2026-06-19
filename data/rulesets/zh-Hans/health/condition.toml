@@ -1,0 +1,66 @@
+base = "health::condition"
+
+[[rulesets]]
+[rulesets.rules]
+"- {::name}" = "- {::name}"
+"{time}:{treatment}" = "{time}:{treatment}"
+#全是权宜之计
+"{treatment_doodoo}" = "{treatment_doodoo}"
+
+[[rulesets]]
+name = "time"
+[rulesets.rules]
+"{time::day}{::day::month}, {#digits}" = "{#digits}年,{::day::month} {time::day}"
+
+[[rulesets]]
+name = "time::day"
+[rulesets.rules]
+"{#digits}{::day::number} " = "{#digits}{::day::number}"
+
+[[rulesets]]
+name = "treatment"
+[rulesets.rules]
+#部分文本被扔在health.csv中
+" Evaluated" = " 诊断"
+" Brought to rest in Bed" = " 被他人安置于床上"
+" Received {::items::crutch}" = " 得到{::items::crutch}"
+" Had {::health::bodypart::bodypart_main} set" = " 已固定{::health::bodypart::bodypart_main}"
+" Cleaned" = " 清理"
+#包扎 #缝合 #上夹板
+" Received {::materials::adjective}{kind}{^0}{$0}" = " 得到{::materials::adjective}{kind}{^0}{$0}"
+
+#权宜之计
+[[rulesets]]
+name = "treatment_doodoo"
+[rulesets.rules]
+#包扎 #缝合 #上夹板
+"{kind}{^0}{::health::bodypart::bodypart_main}" = "{kind}{^0}{::health::bodypart::bodypart_main}"
+
+[[rulesets]]
+name = "kind"
+optional = true
+[rulesets.rules]
+"dressing" = "布料包扎-"
+"sutures" = "细线缝合-"
+" dressing" = "布料包扎-"
+" sutures" = "细线缝合-"
+" splint" = "夹板"
+"splint" = "夹板"
+
+[[rulesets]]
+name = "$0"
+optional = true
+[rulesets.rules]
+" left" = "左"
+" right" = "右"
+" upper" = "上"
+" lower" = "下"
+" {::health::bodypart::bodypart_main}" = "{::health::bodypart::bodypart_main}"
+
+[[rulesets]]
+name = "^0"
+optional = true
+[rulesets.rules]
+"on" = "于-"
+"on " = "于-"
+" on" = "于-"

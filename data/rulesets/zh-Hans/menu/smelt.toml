@@ -5,3 +5,14 @@ base = "menu::smelt"
 "Make coke from bituminous coal" = "使用烟煤制作焦炭"
 "Make coke from lignite" = "使用褐煤制作焦炭"
 "Melt a metal object" = "融炼一件金属物品"
+"{kind}{main}" = "{kind}{main}"
+
+[[rulesets]]
+name = "kind"
+[rulesets.rules]
+"Smelt" = "熔炼"
+
+[[rulesets]]
+name = "main"
+[rulesets.rules]
+" {::materials::state::shared::main} ore" = "{::materials::state::shared::main}矿石"

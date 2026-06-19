@@ -1,0 +1,12 @@
+base = "health::itemget"
+
+[[rulesets]]
+[rulesets.rules]
+"{bodypart}" = "{bodypart}"
+"Strapped to {bodypart}" = "固定在{bodypart}"
+"Multigrasp" = "双手持握"
+
+[[rulesets]]
+name = "bodypart"
+[rulesets.rules]
+"{::health::bodypart::bodypart_main}" = "{::health::bodypart::bodypart_main}"

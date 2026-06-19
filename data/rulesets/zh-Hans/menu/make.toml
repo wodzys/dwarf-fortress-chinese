@@ -2,27 +2,34 @@ base = "menu::make"
 
 [[rulesets]]
 [rulesets.rules]
-"{kind}{^0}{main}" = "{kind}{^0}{main}"
+"{kind}{main}" = "{kind}{main}"
+"Make potash from ash" = "用灰烬制草碱"
+"Make potash from lye" = "用碱液制草碱"
+"Make soap from oil" = "用植物油制作肥皂"
+"Make soap from tallow" = "用脂油制作肥皂"
+"Make large clay pot" = "制作大黏土罐"
+"Make plaster powder" = "制作石膏粉"
+"Make large wooden gem" = "制作大型木制宝石"
+"Make quire" = "制作稿纸"
+"Make scroll" = "制作卷轴"
+"Make wax crafts" = "制作蜂蜡工艺品"
+"Make sheet from plant" = "用植物做纸张"
 
 [[rulesets]]
 name = "kind"
 [rulesets.rules]
 "Make" = "制作"
-"Forge" = "锻造"
-"Smelt" = "熔炼"
-"Assemble" = "组装"
-
-[[rulesets]]
-name = "^0"
-optional = true
-[rulesets.rules]
-" {::materials::state}" = "{::materials::state}"
-" wooden" = "木制"
+"Make three" = "制作三个"
+"Make four" = "制作四个"
+"Make five" = "制作五个"
+"Make twenty-five" = "制作二十五个"
+"Make pair of" = "制作一对"
 
 [[rulesets]]
 name = "main"
 [rulesets.rules]
 " {::items::main}" = "{::items::main}"
-" crafts" = "工艺品"
-" ore" = "矿石"
-" ash" = "灰"
+" {::materials::adjective} crafts" = "{::materials::adjective}工艺品"
+" ash" = "灰烬"
+" instrument piece" = "乐器部件"
+" instrument" = "乐器"

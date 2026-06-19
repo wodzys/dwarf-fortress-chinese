@@ -1,0 +1,17 @@
+base = "menu::collect"
+
+[[rulesets]]
+[rulesets.rules]
+"{kind}{main}" = "{kind}{main}"
+
+[[rulesets]]
+name = "kind"
+[rulesets.rules]
+"Collect" = "收集"
+
+[[rulesets]]
+name = "main"
+[rulesets.rules]
+" clay" = "黏土"
+" webs" = "网"
+" sand" = "沙"

@@ -37,6 +37,9 @@ namespace Hooks {
 
         bool load_rule_sets();
         void load_from_dir(const std::filesystem::path& dir) {
+            if (!std::filesystem::exists(dir) || !std::filesystem::is_directory(dir)) {
+                return;
+            }
             std::optional<std::string> visited_root;
             parse_dir(dir, dir, visited_root);
             validate_references();
@@ -211,8 +214,13 @@ namespace Hooks {
         void validate_identifier_format(const std::string& identifier);
 
         // 工具
+        static bool ci_char_equal(unsigned char a, unsigned char b);
         static bool matches_literal(std::string_view input, std::string_view pattern);
+        static bool is_placeholder(std::string_view identifier);
+        static bool is_builtin(std::string_view identifier);
+        static std::optional<size_t> find_literal_position(std::string_view text, std::string_view literal);
         static std::string build_translated(const Tokens& trans_tokens, const BindingMap& bindings);
+        static void print_translation_path(const ResultTree& node, int indent = 0);
         static const std::regex& token_split_regex() {
             static const std::regex re(R"(\{([^\{\}]+)\})");
             return re;

@@ -13,10 +13,10 @@ name = "with_number"
 name = "$number"
 optional = true
 [rulesets.rules]
-" x{%number}" = " x{%number}"
-" (%{%number})" = " (%{%number})"
-" [{%number}]" = " [{%number}]"
-" <#{%number}>" = " <#{%number}>"
+" x{#digits}" = " x{#digits}"
+" (%{#digits})" = " (%{#digits})"
+" [{#digits}]" = " [{#digits}]"
+" <#{#digits}>" = " <#{#digits}>"
 
 [[rulesets]]
 name = "^0"
@@ -30,6 +30,7 @@ name = "main"
 "{altar}" = "{altar}"
 "{bar}" = "{bar}"
 "{smallgem}" = "{smallgem}"
+"{spice}" = "{spice}"
 "{blocks}" = "{blocks}"
 "{rough}" = "{rough}"
 "{boulder}" = "{boulder}"
@@ -135,6 +136,7 @@ name = "main"
 "{stepladder}" = "{stepladder}"
 "{displaycase}" = "{displaycase}"
 "{boltthrowerparts}" = "{boltthrowerparts}"
+"{::plants::seed::plural} {bag}" = "{::plants::seed::plural}{bag}"
 
 [[rulesets]]
 name = "prefix::maybe_equipment_size"

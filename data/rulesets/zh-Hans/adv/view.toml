@@ -1,0 +1,29 @@
+base = "adv::view"
+
+[[rulesets]]
+[rulesets.rules]
+"View {main}" = "查看{main}"
+
+[[rulesets]]
+name = "main"
+[rulesets.rules]
+"yourself" = "你自己"
+"the{kind}{profession}{name}" = "{kind}{profession}{name}"
+
+[[rulesets]]
+name = "kind"
+optional = true
+[rulesets.rules]
+" {::creatures::caste::singular}" = "{::creatures::caste::singular}"
+
+[[rulesets]]
+name = "profession"
+optional = true
+[rulesets.rules]
+" {::professions}" = "{::professions}"
+
+[[rulesets]]
+name = "name"
+optional = true
+[rulesets.rules]
+" {::dwarf_language}" = "{::dwarf_language}"

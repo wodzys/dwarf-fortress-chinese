@@ -1,0 +1,16 @@
+base = "adv::claim"
+
+[[rulesets]]
+[rulesets.rules]
+"Claim {name}{direction} as pet" = "认领{name}{direction} 为宠物"
+
+[[rulesets]]
+name = "name"
+[rulesets.rules]
+"{::creatures::caste::name}" = "{::creatures::caste::name}"
+
+[[rulesets]]
+name = "direction"
+optional = true
+[rulesets.rules]
+"{::adv::direction}" = "{::adv::direction}"

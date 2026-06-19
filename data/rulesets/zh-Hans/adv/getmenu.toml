@@ -1,0 +1,17 @@
+base = "adv::getmenu"
+
+[[rulesets]]
+[rulesets.rules]
+"Get {itemname}{direction}" = "拿取{itemname}{direction}"
+"Make Campfire{direction}" = "搭建篝火{direction}"
+
+[[rulesets]]
+name = "itemname"
+[rulesets.rules]
+"{::items}" = "{::items}"
+
+[[rulesets]]
+name = "direction"
+optional = true
+[rulesets.rules]
+"{::adv::direction}" = "{::adv::direction}"

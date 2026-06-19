@@ -2,13 +2,30 @@ base = "items::barrel"
 
 [[rulesets]]
 [rulesets.rules]
+"{^content} {main}{$0}" = "{^content}{main}{$0}"
 "{^0}{main}{$0}" = "{^0}{main}{$0}"
+
+[[rulesets]]
+name = "^content"
+optional = true
+[rulesets.rules]
+"{::items::fish}" = "{::items::fish}"
+"{::items::meat}" = "{::items::meat}"
+"{::items::plant}" = "{::items::plant}"
+"{::items::drink}" = "{::items::drink}"
+"{::items::food}" = "{::items::food}"
+"{::items::dye}" = "{::items::dye}"
+"{::items::cheese}" = "{::items::cheese}"
+"{::items::powder_misc}" = "{::items::powder_misc}"
+"{::items::seeds}" = "{::items::seeds}"
+"{::items::spice}" = "{::items::spice}"
 
 [[rulesets]]
 name = "$0"
 optional = true
 [rulesets.rules]
 " ({::materials::adjective})" = " ({::materials::adjective})"
+" ({::materials})" = " ({::materials})"
 
 [[rulesets]]
 name = "^0"

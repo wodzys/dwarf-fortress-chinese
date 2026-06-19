@@ -1,0 +1,8 @@
+base = "menu::craft"
+#存放不被make包括的，手艺工坊的工作
+[[rulesets]]
+[rulesets.rules]
+"rock" = "岩石"
+"wood" = "木头"
+"bone" = "骨头"
+"shell" = "壳"

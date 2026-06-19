@@ -1,0 +1,56 @@
+base = "dwarf_language::dwarfname"
+
+[[rulesets]]
+[rulesets.rules]
+"{first} {last}{add}" = "{first} {last}{add}"
+
+[[rulesets]]
+name = "first"
+[rulesets.rules]
+"{::dwarf_language::none::prename}" ="{::dwarf_language::none::prename}"
+
+[[rulesets]]
+name = "last"
+[rulesets.rules]
+"{last::pre}{last::tail}" = "{last::pre}{last::tail}"
+
+[[rulesets]]
+name = "last::pre"
+[rulesets.rules]
+"{::dwarf_language::none::main}" = "{::dwarf_language::none::main}"
+"{::dwarf_language::veb::main}" = "{::dwarf_language::veb::main}"
+"{::dwarf_language::adj::main}" = "{::dwarf_language::adj::main}"
+
+[[rulesets]]
+name = "last::tail"
+[rulesets.rules]
+"{::dwarf_language::none::main}" = "{::dwarf_language::none::main}"
+"{::dwarf_language::veb::main}" = "{::dwarf_language::veb::main}"
+"{::dwarf_language::adj::main}" = "{::dwarf_language::adj::main}"
+
+[[rulesets]]
+name = "add"
+optional = true
+[rulesets.rules]
+" {add::first}{add::last} {add::tail}" = " {add::first}{add::last} {add::tail}"
+
+[[rulesets]]
+name = "add::first"
+[rulesets.rules]
+"{::dwarf_language::none::main}" = "{::dwarf_language::none::main}"
+"{::dwarf_language::veb::main}" = "{::dwarf_language::veb::main}"
+"{::dwarf_language::adj::main}" = "{::dwarf_language::adj::main}"
+
+[[rulesets]]
+name = "add::last"
+[rulesets.rules]
+"{::dwarf_language::none::main}" = "{::dwarf_language::none::main}"
+"{::dwarf_language::veb::main}" = "{::dwarf_language::veb::main}"
+"{::dwarf_language::adj::main}" = "{::dwarf_language::adj::main}"
+
+[[rulesets]]
+name = "add::tail"
+[rulesets.rules]
+"{::dwarf_language::none::main}" = "{::dwarf_language::none::main}"
+"{::dwarf_language::veb::main}" = "{::dwarf_language::veb::main}"
+"{::dwarf_language::adj::main}" = "{::dwarf_language::adj::main}"

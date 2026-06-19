@@ -1,0 +1,136 @@
+base = "health::bodypart"
+
+[[rulesets]]
+[rulesets.rules]
+"{bodypart_main}{second_part}{main_tissue}" = "{bodypart_main}{second_part}{main_tissue}"
+
+[[rulesets]]
+name = "second_part"
+optional = true
+[rulesets.rules]
+", {bodypart_main}" = ", {bodypart_main}"
+
+[[rulesets]]
+name = "main_tissue"
+optional = true
+[rulesets.rules]
+", {tissue}" = ", {tissue}"
+
+[[rulesets]]
+name = "tissue"
+[rulesets.rules]
+"skin" = "皮肤"
+"muscle" = "肌肉"
+"fat" = "脂肪"
+"nervous tissue" = "神经组织"
+"bone" = "骨骼"
+"skull" = "颅骨"
+"hair" = "毛发"
+"nail" = "指甲"
+"{organ} tissue" = "{organ}组织"
+"pancreatic tissue" = "胰腺组织"
+"gut" = "肠子"
+"cartilage" = "软骨"
+"throat" = "喉咙"
+"chin whisker" = "下颌须"
+
+[[rulesets]]
+name = "bodypart_main"
+[rulesets.rules]
+# 身体
+"{up_down}body" = "{up_down}半身"
+"upper spine" = "上背部脊柱"
+"middle spine" = "背部脊柱"
+"lower spine" = "腰椎"
+"{side}true ribs" = "{side}真肋"
+"{side}false ribs" = "{side}假肋"
+"{side}floating ribs" = "{side}浮肋"
+# 下半身 - 有前后-针对动物
+"{side}hip" = "{side}臀部"
+"{side}{fl}upper leg" = "{side}{fl}大腿"
+"{side}knee" = "{side}膝"
+"{side}{fl}lower leg" = "{side}{fl}小腿"
+"{side}{fl}leg" = "{side}{fl}腿"
+"{side}{fl}ankle" = "{side}{fl}脚踝"
+"{side}{fl}foot" = "{side}{fl}脚"
+"{toe}toe" = "{toe}趾"
+#上半身
+"{side}shoulder" = "{side}肩"
+"{side}upper arm" = "{side}上臂"
+"{side}elbow" = "{side}肘"
+"{side}lower arm" = "{side}前臂"
+"{side}wrist" = "{side}手腕"
+"{side}hand" = "{side}手"
+"thumb" = "拇指"
+"{finger}finger" = "{finger}指"
+#头颈
+"{side}ear" = "{side}耳"
+"{side}cheek" = "{side}脸颊"
+"{side}eyelid" = "{side}眼睑"
+"head" = "头部"
+"{up_down}lip" = "{up_down}唇"
+"neck" = "脖子"
+#牙齿
+"{up_down}front teeth" = "{up_down}门牙"
+"{up_down}{side}back teeth" = "{side}{up_down}臼齿"
+# 独立部位
+"throat" = "喉咙"
+"nose" = "鼻子"
+"mouth" = "嘴巴"
+"tongue" = "舌头"
+#奇怪,不知道,但是要用
+"skull" = "颅骨"
+"guts" = "肠子"
+"{side}{organ}" = "{side}{organ}"
+
+[[rulesets]]
+name = "organ"
+[rulesets.rules]
+"lung" = "肺"
+"stomach" = "胃"
+"heart" = "心脏"
+"liver" = "肝脏"
+"spleen" = "脾脏"
+"kidney" = "肾"
+"pancreas" = "胰腺"
+"eye" = "眼"
+
+[[rulesets]]
+name = "up_down"
+optional = true
+[rulesets.rules]
+"upper " = "上"
+"lower " = "下"
+
+[[rulesets]]
+name = "side"
+optional = true
+[rulesets.rules]
+"left " = "左"
+"right " = "右"
+
+[[rulesets]]
+name = "fl"
+optional = true
+[rulesets.rules]
+"front " = "前"
+"rear" = "后"
+
+# 手指名称规则集
+[[rulesets]]
+name = "finger"
+[rulesets.rules]
+"first " = "食"
+"second " = "中"
+"third " = "无名"
+"fourth " = "小"
+
+# 脚趾名称规则集
+[[rulesets]]
+name = "toe"
+[rulesets.rules]
+"first " = "大脚"
+"second " = "第二脚"
+"third " = "第三脚"
+"fourth " = "第四脚"
+"fifth " = "第五脚"

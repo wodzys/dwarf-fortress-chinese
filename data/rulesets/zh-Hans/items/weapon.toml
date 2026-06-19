@@ -24,11 +24,6 @@ name = "default::main"
 "weapons" = "武器"
 
 [[rulesets]]
-name = "prefix"
-[rulesets.rules]
-"large " = "大"
-
-[[rulesets]]
 name = "singular"
 [rulesets.rules]
 "{^0}{^1}{singular::main}" = "{^0}{^1}{singular::main}"
@@ -42,7 +37,12 @@ name = "plural"
 name = "^0"
 optional = true
 [rulesets.rules]
-"{prefix} " = "{prefix}"
+"{prefix}" = "{prefix}"
+
+[[rulesets]]
+name = "prefix"
+[rulesets.rules]
+"large " = "大"
 
 [[rulesets]]
 name = "^1"
@@ -61,6 +61,7 @@ name = "singular::main"
 "mace" = "页锤"
 "crossbow" = "十字弩"
 "pick" = "鹤嘴锄"
+"great pick" = "大鹤嘴锄"
 "bow" = "弓"
 "blowgun" = "吹管"
 "pike" = "长枪"

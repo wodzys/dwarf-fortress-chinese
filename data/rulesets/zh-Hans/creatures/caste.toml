@@ -1,6 +1,23 @@
 base = "creatures::caste"
 
 [[rulesets]]
+name = "name"
+[rulesets.rules]
+"{name::prefix}{singular}{name::tailfix}" = "{name::prefix}{singular}{name::tailfix}"
+
+[[rulesets]]
+name = "name::prefix"
+optional = true
+[rulesets.rules]
+"stray " = "流浪"
+
+[[rulesets]]
+name = "name::tailfix"
+optional = true
+[rulesets.rules]
+" (Tame)" = "(驯服)"
+
+[[rulesets]]
 name = "singular"
 [rulesets.rules]
 "aardvark" = "土豚"

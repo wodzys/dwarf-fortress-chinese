@@ -1,0 +1,80 @@
+base = "english_name::name"
+
+[[rulesets]]
+[rulesets.rules]
+"{last}{add}" = "翻{last}{add}"
+"{place}" = "翻{place}"
+
+[[rulesets]]
+name = "place"
+[rulesets.rules]
+"The {place::pre} of {place::tail}" = "The {place::pre} of {place::tail}"
+"The {place::pre} {place::tail}" = "The {place::pre} {place::tail}"
+
+[[rulesets]]
+name = "place::fix"
+optional = true
+[rulesets.rules]
+"s" = "s"
+"ing" = "ing"
+"ed" = "ed"
+
+[[rulesets]]
+name = "place::pre"
+[rulesets.rules]
+"{::english_name::none::main}{place::fix}" = "{::english_name::none::main}{place::fix}"
+"{::english_name::veb::main}{place::fix}" = "{::english_name::veb::main}{place::fix}"
+"{::english_name::adj::main}{place::fix}" = "{::english_name::adj::main}{place::fix}"
+
+[[rulesets]]
+name = "place::tail"
+[rulesets.rules]
+"{::english_name::none::main}{place::fix}" = "{::english_name::none::main}{place::fix}"
+"{::english_name::veb::main}{place::fix}" = "{::english_name::veb::main}{place::fix}"
+"{::english_name::adj::main}{place::fix}" = "{::english_name::adj::main}{place::fix}"
+
+[[rulesets]]
+name = "last"
+[rulesets.rules]
+"{last::pre}{last::tail}" = "{last::pre}{last::tail}"
+
+[[rulesets]]
+name = "last::pre"
+[rulesets.rules]
+"{::english_name::none::main}{place::fix}" = "{::english_name::none::main}{place::fix}"
+"{::english_name::veb::main}{place::fix}" = "{::english_name::veb::main}{place::fix}"
+"{::english_name::adj::main}{place::fix}" = "{::english_name::adj::main}{place::fix}"
+
+[[rulesets]]
+name = "last::tail"
+[rulesets.rules]
+"{::english_name::none::main}{place::fix}" = "{::english_name::none::main}{place::fix}"
+"{::english_name::veb::main}{place::fix}" = "{::english_name::veb::main}{place::fix}"
+"{::english_name::adj::main}{place::fix}" = "{::english_name::adj::main}{place::fix}"
+
+[[rulesets]]
+name = "add"
+optional = true
+[rulesets.rules]
+" {add::first}{add::last} {add::tail}" = " {add::first}{add::last} {add::tail}"
+
+[[rulesets]]
+name = "add::first"
+[rulesets.rules]
+"{::english_name::none::main}" = "{::english_name::none::main}"
+"{::english_name::veb::main}" = "{::english_name::veb::main}"
+"{::english_name::adj::main}" = "{::english_name::adj::main}"
+
+[[rulesets]]
+name = "add::last"
+[rulesets.rules]
+"{::english_name::none::main}" = "{::english_name::none::main}"
+"{::english_name::veb::main}" = "{::english_name::veb::main}"
+"{::english_name::adj::main}" = "{::english_name::adj::main}"
+
+[[rulesets]]
+name = "add::tail"
+[rulesets.rules]
+"{::english_name::none::main}" = "{::english_name::none::main}"
+"{::english_name::veb::main}" = "{::english_name::veb::main}"
+"{::english_name::adj::main}" = "{::english_name::adj::main}"

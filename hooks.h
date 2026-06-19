@@ -10,7 +10,7 @@ namespace Hooks {
 
     inline std::int64_t dfch_init_elapsed_us = 0;
 
-    void init();
+    bool init();
     void shutdown();
     void plugin_enable(bool enabled);
     void screen_changed(std::string screen_name);

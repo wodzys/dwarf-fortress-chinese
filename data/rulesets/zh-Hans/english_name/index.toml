@@ -1,0 +1,5 @@
+base = "english_name"
+
+[[rulesets]]
+[rulesets.rules]
+"{name}" = "{name}"

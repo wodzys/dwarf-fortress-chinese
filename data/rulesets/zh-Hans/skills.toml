@@ -2,7 +2,14 @@ base = "skills"
 
 [[rulesets]]
 [rulesets.rules]
-"{level} {name}" = "{level}{name}"
+"{level} {name}{$0}" = "{level}{name}{$0}"
+
+[[rulesets]]
+name = "$0"
+optional = true
+[rulesets.rules]
+" (Rusty)" = "（生疏）"
+" (Very Rusty)" = "（非常生疏）"
 
 [[rulesets]]
 name = "level"

@@ -53,7 +53,10 @@ DFhackCExport command_result plugin_init(color_ostream &out, std::vector<PluginC
         Gui::anywhere_hotkey
     ));
 
-    Hooks::init();
+    if (!Hooks::init()) {
+        DEBUG(status,out).print("%s init failed, plugin not fully loaded\n", plugin_name);
+        return CR_FAILURE;
+    }
     Hooks::attach();
 
     return CR_OK;

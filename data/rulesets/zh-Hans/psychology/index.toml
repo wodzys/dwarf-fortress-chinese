@@ -1,0 +1,7 @@
+base = "psychology"
+
+[[rulesets]]
+[rulesets.rules]
+"{memory}" = "{memory}"
+"{thought}" = "{thought}"
+"{needs}" = "{needs}"

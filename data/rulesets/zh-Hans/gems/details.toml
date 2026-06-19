@@ -145,7 +145,8 @@ name = "plural::adjective::main"
 name = "materials"
 [rulesets.rules]
 "{materials::glasses}" = "{materials::glasses}"
-"{::gems::singular}" = "{::gems::singular}"
+"{::gems::materials::singular}" = "{::gems::materials::singular}"
+"{::materials}" = "{::materials}"
 
 [[rulesets]]
 name = "materials::glasses"

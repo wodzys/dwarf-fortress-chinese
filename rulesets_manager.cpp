@@ -43,15 +43,21 @@ namespace Hooks {
     // 从根出发的图分析（循环检测 + simple 叶子路径）
     // -------------------------------------------------------------------------
 
-    /// 从 "::" 出发做单次 DFS，同时完成两件事：
+    /// 从 "::" 出发做全量 DFS（无缓存，每条路径完整探索），同时完成三件事：
     ///
-    ///   1. 循环检测：通过 path_stack 检测 back-edge，发现循环时标记规则签名
-    ///      到 cyclic_rule_signatures_ 并直接打印循环路径。
+    ///   设计决策：不使用 visited 集合剪枝（即同一 namespace 可能被多条路径重复访问）。
+    ///   规则集图规模有限（实际 ~585 节点，边数可控），全量遍历的开销在加载期可接受。
+    ///   保留 visited 仅用于统计可达节点数，不用于控制流程 —— 确保每条 distinct 路径的
+    ///   simple 属性都被独立评估，每条循环路径都被完整发现。
     ///
-    ///   2. simple 叶子路径：沿 DFS 路径传播 parent_simple 标志。
-    ///      当 namespace 所有规则都是 1-token 且 max_refs==0（纯字面叶子）时，
-    ///      直接打印 ":: → ... → leaf" 路径，供后续扁平化到 CSV 参考。
-    ///      simple 路径结构：一连串 max_refs=1 的委派节点，最终落到 max_refs=0 的叶子。
+    ///   1. 循环检测：通过 in_stack 检测 back-edge，发现循环时标记规则签名
+    ///      到 cyclic_rule_signatures_ 并打印循环路径。
+    ///
+    ///   2. simple 叶子路径：parent_simple 在规则粒度沿 DFS 传播。
+    ///      source 为单 token 的规则是"简单委派"，不切断 simple 链。
+    ///      当 namespace 所有规则都是 1-token 纯字面时打印 [SimpleLeaf]。
+    ///
+    ///   3. 深度追踪：每次深入新节点时记录最深路径。
     void RulesetsManager::analyze_from_root() {
         cyclic_rule_signatures_.clear();
 
@@ -60,8 +66,8 @@ namespace Hooks {
             return;
         }
 
-        std::set<std::string> visited;       // 已完成探索的 namespace
-        std::set<std::string> in_stack;      // 当前路径上的 namespace
+        std::set<std::string> in_stack;      // 当前路径上的 namespace（循环检测）
+        std::set<std::string> visited;       // 所有已探索的 namespace（纯统计）
         std::vector<std::string> path_stack; // 当前路径（有序）
 
         // edge_stack[i] = 从 path_stack[i] 到 path_stack[i+1] 所经过的规则签名
@@ -74,24 +80,22 @@ namespace Hooks {
         // parent_simple: 从根到当前 namespace 的路径上所有祖先都是 simple
         std::function<std::string(const std::string&, bool)> dfs =
             [&](const std::string& current, bool parent_simple) -> std::string {
-            if (visited.contains(current)) return "";
 
             // back-edge：current 已在当前路径上 → 发现循环
             if (in_stack.contains(current)) {
                 auto stack_it = std::find(path_stack.begin(), path_stack.end(), current);
-                if (stack_it != path_stack.end()) {
-                    size_t idx = stack_it - path_stack.begin();
-                    for (size_t i = idx; i < edge_stack.size(); ++i) {
-                        cyclic_rule_signatures_.insert({edge_stack[i].from_ns, edge_stack[i].rule_source});
-                    }
-                    // 打印循环路径
-                    std::string cycle_path = current;
-                    cycle_path.reserve(256);
-                    for (size_t i = idx + 1; i < path_stack.size(); ++i)
-                        cycle_path += " → " + path_stack[i];
-                    cycle_path += " → " + current + " (back)";
-                    LOGGERMANAGER.getLogger()->warn("[Cycle] {}", cycle_path);
+                // in_stack 与 path_stack 始终同步，current 必在 path_stack 中
+                size_t idx = stack_it - path_stack.begin();
+                for (size_t i = idx; i < edge_stack.size(); ++i) {
+                    cyclic_rule_signatures_.insert({edge_stack[i].from_ns, edge_stack[i].rule_source});
                 }
+                // 打印循环路径
+                std::string cycle_path = current;
+                cycle_path.reserve(256);
+                for (size_t i = idx + 1; i < path_stack.size(); ++i)
+                    cycle_path += " → " + path_stack[i];
+                cycle_path += " → " + current + " (back)";
+                LOGGERMANAGER.getLogger()->error("[Cycle] {}", cycle_path);
                 return current;  // 返回 cycle target
             }
 
@@ -102,47 +106,89 @@ namespace Hooks {
             if (path_stack.size() > global_max_depth) {
                 global_max_depth = path_stack.size();
                 deepest_id = current;
+                std::string depth_path;
+                depth_path.reserve(256);
+                for (size_t i = 0; i < path_stack.size(); ++i) {
+                    if (i > 0) depth_path += " → ";
+                    depth_path += path_stack[i];
+                }
+                LOGGERMANAGER.getLogger()->debug("[Depth]{}: {}", global_max_depth, depth_path);
             }
 
             auto it = rulesets_.find(current);
             if (it != rulesets_.end()) {
-                // 检查当前 namespace 所有规则的 source pattern 是否都只有 1 个 token
-                // 1-token 规则：纯字面（如 "barrel"）或单次委派（如 "{A}"），不涉及多 token 组合（如 "{A}{B}" 或 "{A} literal"）
-                bool all_single_token = true;
-                size_t max_refs = 0;
-                for (const auto& [orig_tokens, trans_tokens] : it->second) {
-                    if (orig_tokens.size() == 1 && trans_tokens.size() == 1
-                        && orig_tokens[0].type == Type::Literal && orig_tokens[0].value.empty()
-                        && trans_tokens[0].type == Type::Literal && trans_tokens[0].value.empty())
-                        continue;
+                // [SimpleLeaf] 检查（namespace 级别）：所有规则 source 都是单 token 且无引用
+                {
+                    bool all_single_token = true;
+                    bool has_ref = false;
+                    for (const auto& [orig_tokens, trans_tokens] : it->second) {
+                        if (orig_tokens.size() == 1 && trans_tokens.size() == 1
+                            && orig_tokens[0].type == Type::Literal && orig_tokens[0].value.empty()
+                            && trans_tokens[0].type == Type::Literal && trans_tokens[0].value.empty())
+                            continue;
 
-                    if (orig_tokens.size() != 1) {
-                        all_single_token = false;
-                        break;
+                        if (orig_tokens.size() != 1) {
+                            all_single_token = false;
+                            break;
+                        }
+                        if (orig_tokens[0].type == Type::Reference) has_ref = true;
                     }
-                    if (orig_tokens[0].type == Type::Reference) max_refs = 1;
+                    if (parent_simple && all_single_token && !has_ref) {
+                        std::string path_str;
+                        path_str.reserve(256);
+                        for (size_t i = 0; i < path_stack.size(); ++i) {
+                            if (i > 0) path_str += " → ";
+                            path_str += path_stack[i];
+                        }
+                        LOGGERMANAGER.getLogger()->debug("[SimpleLeaf] {}", path_str);
+                    }
                 }
 
-                bool is_simple = parent_simple && all_single_token;
-                if (is_simple && max_refs == 0) {
-                    std::string path_str;
-                    path_str.reserve(256);
-                    for (size_t i = 0; i < path_stack.size(); ++i) {
-                        if (i > 0) path_str += " → ";
-                        path_str += path_stack[i];
-                    }
-                    LOGGERMANAGER.getLogger()->info("[SimpleLeaf] {}", path_str);
-                }
-
-                // 遍历所有规则的引用，将 effective 传递给子节点
+                // 逐规则遍历引用 — parent_simple 在规则粒度判断：
+                // 单 token source 的规则是"简单委派"，不影响 child 的 simple 链；
+                // 多 token source 的规则是"复杂匹配"，切断 simple 链。
                 std::string cycle_target;
-                for (const auto& [orig_tokens, _] : it->second) {
+                for (const auto& [orig_tokens, trans_tokens] : it->second) {
+                    // 判断当前这条规则是否"简单"（source 只有 1 个 token）
+                    bool is_optional_empty = (orig_tokens.size() == 1 && trans_tokens.size() == 1
+                        && orig_tokens[0].type == Type::Literal && orig_tokens[0].value.empty()
+                        && trans_tokens[0].type == Type::Literal && trans_tokens[0].value.empty());
+                    bool rule_is_single = is_optional_empty || (orig_tokens.size() == 1);
+                    bool child_simple = parent_simple && rule_is_single;
+
                     for (const auto& token : orig_tokens) {
                         if (token.type != Type::Reference) continue;
-                        if (token.value[0] == '%') continue;
+                        if (token.value[0] == '@' || token.value[0] == '#') continue;
+
+                        // 决定要跟踪的目标 namespace。
+                        // - 普通引用：直接使用 token.value（已由 parse_file 规范化）
+                        // - % 引用：格式为 %replacer:base_ns[:qualifier]（已规范化）
+                        //   从中提取目标 namespace ::base_ns[::qualifier]
+                        std::string ref_target;
+                        if (token.value[0] == '%') {
+                            auto first_colon = token.value.find(':');
+                            if (first_colon == std::string::npos) continue;       // 无冒号（不应出现）
+                            auto second_colon = token.value.find(':', first_colon + 1);
+                            if (second_colon == std::string::npos) {
+                                // %replacer:base_ns → 目标为 ::base_ns
+                                std::string base = token.value.substr(first_colon + 1);
+                                if (base.empty()) continue;                      // %replacer: → 跳过
+                                ref_target = "::" + base;
+                            } else {
+                                // %replacer:base_ns:qualifier → 目标为 ::base_ns::qualifier
+                                std::string base = token.value.substr(first_colon + 1, second_colon - first_colon - 1);
+                                std::string qualifier = token.value.substr(second_colon + 1);
+                                if (qualifier.starts_with("::"))
+                                    ref_target = qualifier;                      // 已是绝对路径
+                                else
+                                    ref_target = "::" + base + "::" + qualifier;
+                            }
+                        } else {
+                            ref_target = token.value;
+                        }
 
                         edge_stack.push_back({current, orig_tokens});
-                        std::string target = dfs(token.value, is_simple);
+                        std::string target = dfs(ref_target, child_simple);
                         edge_stack.pop_back();
 
                         if (!target.empty()) {
@@ -175,8 +221,7 @@ namespace Hooks {
                 deepest_id, global_max_depth);
         }
 
-        LOGGERMANAGER.getLogger()->info("[Analyze] {} namespaces reachable from root",
-            visited.size());
+        LOGGERMANAGER.getLogger()->info("[Analyze] {} namespaces reachable from root", visited.size());
     }
 
     bool RulesetsManager::load_rule_sets() {
@@ -200,49 +245,32 @@ namespace Hooks {
 
     /// 翻译输入文本，返回翻译结果。
     ///
-    /// 根级别采用迭代链式匹配策略：
-    /// 根规则通常为单引用直通规则（如 "{materials}" = "{materials}"）。
-    /// 复合输入（如 "Pig iron bars"）需要多次迭代才能完全消费：
-    ///   第 1 轮: {materials} 匹配 "Pig iron" → 生铁，剩余 " bars"
-    ///   第 2 轮: {items} 链匹配 " bars" → 锭，剩余 ""
-    ///
-    /// 每轮选择最优匹配的优先级：
-    ///   1. 完整匹配 > 部分匹配
-    ///   2. 剩余文本最短
-    ///   3. 权重最低
+    /// 单次递归匹配：从根命名空间 :: 出发，由一条完整规则消费全部输入。
+    /// 跨域组合词（如 "Pig iron bars"）的翻译应由 TOML 规则本身覆盖
+    /// （例如在 ::items 中定义 "{::materials} bars" = "{::materials}锭"），
+    /// 而非由引擎通过多轮迭代动态拼凑。单规则完整匹配也保证了 build_translated
+    /// 可以按需调整子翻译的语序，而不受左到右拼接约束。
     ///
     /// @param text 待翻译的英文文本
     /// @return     翻译后的中文文本，无法翻译时返回 std::nullopt
     std::optional<std::string> RulesetsManager::translate(const std::string& text) const {
-        std::string full_translation;
-        std::string remaining = text;
-        size_t max_iterations = 10; // 防止异常输入导致无限循环
+        auto results = find_translations(text, false);
 
-        while (!remaining.empty() && max_iterations-- > 0) {
-            auto results = find_translations(remaining, false);
+        if (results.empty()) return std::nullopt;
 
-            if (results.empty()) break;
+        auto best = std::ranges::min_element(results,
+            [](const std::shared_ptr<const ResultTree>& a, const std::shared_ptr<const ResultTree>& b) {
+                return a->weight() < b->weight();
+            });
 
-            // 三阶段排序：完整匹配优先 → 剩余文本最短 → 权重最低
-            auto best = std::ranges::min_element(results,
-                [](const std::shared_ptr<const ResultTree>& a, const std::shared_ptr<const ResultTree>& b) {
-                    bool a_full = a->remaining.empty(), b_full = b->remaining.empty();
-                    if (a_full != b_full) return a_full;
-                    if (a->remaining.size() != b->remaining.size())
-                        return a->remaining.size() < b->remaining.size();
-                    return a->weight() < b->weight();
-                });
+        // LOGGERMANAGER.getLogger()->debug("\n========== All %zu Translation Results for \"%s\" ==========\n", results.size(), text.c_str());
+        // for (size_t i = 0; i < results.size(); ++i) {
+        //     LOGGERMANAGER.getLogger()->debug("--- Result #%zu (weight=%zu) ---\n", i, results[i]->weight());
+        //     print_translation_path(*results[i]);
+        // }
+        // LOGGERMANAGER.getLogger()->debug("======================================================\n\n");
 
-            full_translation += (*best)->translated;
-            std::string new_remaining = (*best)->remaining;
-
-            // 无进展时退出，防止死循环
-            if (new_remaining == remaining) break;
-            remaining = std::move(new_remaining);
-        }
-
-        if (full_translation.empty()) return std::nullopt;
-        return full_translation;
+        return (*best)->translated;
     }
 
     /// 递归遍历目录，收集 .toml 文件并按排序顺序加载。
@@ -433,6 +461,17 @@ namespace Hooks {
                         }
                     }
 
+                    // 校验：Placeholder（@ 前缀）后的 token 必须是 Literal
+                    for (size_t i = 0; i < orig_tokens.size(); ++i) {
+                        if (orig_tokens[i].type == Type::Reference && is_placeholder(orig_tokens[i].value)) {
+                            if (i + 1 < orig_tokens.size() && orig_tokens[i + 1].type != Type::Literal) {
+                                throw std::runtime_error(
+                                    "Placeholder '" + orig_tokens[i].value +
+                                    "' must be followed by a Literal token in: " + std::string(orig_str));
+                            }
+                        }
+                    }
+
                     // 插入规则（保持插入顺序，匹配 Rust IndexMap 行为）
                     rules.emplace_back(std::move(orig_tokens), std::move(trans_tokens));
                 }
@@ -450,7 +489,7 @@ namespace Hooks {
         for (const auto& [name, ruleset] : rulesets_) {
             for (const auto& [orig, _] : ruleset) {
                 for (const auto& token : orig) {
-                    if (token.type == Type::Reference && token.value[0] != '%') {
+                    if (token.type == Type::Reference && token.value[0] != '%' && token.value[0] != '@' && token.value[0] != '#') {
                         if (!rulesets_.contains(token.value))
                             throw std::runtime_error("Reference not found: " + token.value);
                     }
@@ -498,18 +537,19 @@ namespace Hooks {
         const std::string& identifier,
         size_t level
     ) const {
-        // === 0. 处理 Replacer 引用（% 前缀）===
-        if (!identifier.empty() && identifier[0] == '%') {
-            return resolve_replacer(text, identifier, level);
-        }
-
-        // === 1. 记忆化检查 — 两级异构查找，0 次临时字符串分配 ===
+        // === 0. 记忆化检查 — 两级异构查找，0 次临时字符串分配 ===
         if (auto outer_it = memo_cache_.find(identifier); outer_it != memo_cache_.end()) {
             if (auto* cached = outer_it->second.find(text)) {
                 return *cached;
             }
         }
 
+        // === 1. 处理 Replacer 引用（% 前缀）===
+        if (!identifier.empty() && identifier[0] == '%') {
+            auto results = resolve_replacer(text, identifier, level);
+            memo_cache_[identifier].insert(text, results);
+            return results;
+        }
 
         // === 2. 查找规则集 ===
         auto ruleset_it = rulesets_.find(identifier);
@@ -527,12 +567,13 @@ namespace Hooks {
             // === 3.1 逐 Token 匹配（AND 序列）—— 生成 Candidate 列表 ===
             std::vector<Candidate> candidates{Candidate({}, text)};
 
-            for (const auto& token : orig_tokens) {
+            for (size_t ti = 0; ti < orig_tokens.size(); ++ti) {
+                const auto& token = orig_tokens[ti];
                 if (candidates.empty()) break;
                 std::vector<Candidate> next_candidates;
 
-                for (auto& candidate : candidates) {
-                    if (token.type == Type::Literal) {
+                if (token.type == Type::Literal) {
+                    for (auto& candidate : candidates) {
                         // 字面文本：大小写不敏感前缀匹配
                         std::string_view pattern = token.value;
                         std::string_view remaining_text = candidate.remaining;
@@ -540,7 +581,64 @@ namespace Hooks {
                             std::string new_remaining(remaining_text.substr(pattern.size()));
                             next_candidates.emplace_back(std::move(candidate.results), std::move(new_remaining));
                         }
-                    } else {
+                    }
+                } else if (is_placeholder(token.value)) {
+                    // Placeholder（@ 前缀）：捕获文本并原样穿透输出。
+                    // 加载时已保证后面若有 token 则必为 Literal，见 parse_file()。
+                    for (auto& candidate : candidates) {
+                        if (ti + 1 < orig_tokens.size()) {
+                            // 情况 A：后面还有 Literal（unique delimiter，只需首次匹配）
+                            const auto& next_lit = orig_tokens[ti + 1];
+                            auto pos = find_literal_position(
+                                candidate.remaining, next_lit.value);
+                            if (pos) {
+                                std::string captured = candidate.remaining.substr(0, *pos);
+                                std::string rem = candidate.remaining.substr(
+                                    *pos + next_lit.value.size());
+                                auto new_results = candidate.results;
+                                new_results.emplace_back(token.value,
+                                    std::make_shared<const ResultTree>(
+                                        token.value, captured, captured, "", BindingMap{}));
+                                next_candidates.emplace_back(
+                                    std::move(new_results), std::move(rem));
+                            }
+                        } else {
+                            // 情况 B：最后一个 token → 消费全部剩余文本
+                            auto new_results = candidate.results;
+                            new_results.emplace_back(token.value,
+                                std::make_shared<const ResultTree>(
+                                    token.value, candidate.remaining,
+                                    candidate.remaining, "", BindingMap{}));
+                            next_candidates.emplace_back(
+                                std::move(new_results), "");
+                        }
+                    }
+                    // 仅在确有候选存活时跳过已消费的 Literal；
+                    // 若 delimiter 未找到（所有候选死于 placeholder），则不推进 ti，
+                    // 由循环顶部 candidates.empty() break 安全退出。
+                    if (ti + 1 < orig_tokens.size() && !next_candidates.empty()) ti++;
+                } else if (is_builtin(token.value)) {
+                    // Builtin token（# 前缀）：内联匹配，不递归。
+                    // #digits: 匹配首部连续 ASCII 数字，原样穿透。
+                    for (auto& candidate : candidates) {
+                        std::string matched;
+                        for (char ch : candidate.remaining) {
+                            if (!std::isdigit(static_cast<unsigned char>(ch))) break;
+                            matched.push_back(ch);
+                        }
+                        if (matched.empty()) continue;
+
+                        std::string remaining = candidate.remaining.substr(matched.size());
+                        auto new_results = candidate.results;
+                        new_results.emplace_back(token.value,
+                            std::make_shared<const ResultTree>(
+                                token.value, matched, matched, remaining, BindingMap{}));
+                        next_candidates.emplace_back(
+                            std::move(new_results), std::move(remaining));
+                    }
+                } else {
+                    for (auto& candidate : candidates) {
+                        // 引用 Token：递归求解子目标（AND 绑定）
                         auto sub_results = resolve_namespace(candidate.remaining, token.value, level + 1);
 
                         // 为每个子结果创建新的 Candidate 分支
@@ -579,13 +677,11 @@ namespace Hooks {
 
     /// 将 Replacer 引用（% 前缀标识符）解析为翻译结果。
     ///
-    /// 支持两种 Replacer：
-    ///   - item_designation: 匹配物品标记（品质符号、磨损标记、括号等），
-    ///     剥离标记后委托到引用命名空间翻译内部文本，最后恢复标记包装。
-    ///   - number: 匹配输入开头的连续 ASCII 数字
+    /// 当前仅支持 item_designation：
+    ///   匹配物品标记（品质符号、磨损标记、括号等），
+    ///   剥离标记后委托到引用命名空间翻译内部文本，最后恢复标记包装。
     ///
-    /// 完整的 Replacer 实现（品质符号匹配、磨损标记等）见
-    /// reference/replacer/item_designation.rs 中的 Rust 代码。
+    /// 完整的 Replacer 实现见 reference/replacer/item_designation.rs 中的 Rust 代码。
     std::vector<std::shared_ptr<const RulesetsManager::ResultTree>> RulesetsManager::resolve_replacer(
         const std::string& text,
         const std::string& identifier,
@@ -640,26 +736,6 @@ namespace Hooks {
             return results;
         }
 
-        if (replacer_name == "number") {
-            // 匹配文本开头的连续 ASCII 数字（Rust NumberReplacer 的简化移植）
-            std::vector<std::shared_ptr<const ResultTree>> results;
-            std::string matched;
-            for (char ch : text) {
-                if (!std::isdigit(static_cast<unsigned char>(ch))) break;
-                matched.push_back(ch);
-            }
-            if (!matched.empty()) {
-                results.push_back(std::make_shared<const ResultTree>(
-                    identifier,
-                    matched,
-                    matched,  // 数字直通，不做翻译
-                    text.substr(matched.size()),
-                    BindingMap{}
-                ));
-            }
-            return results;
-        }
-
         // 未知 Replacer 类型：返回空结果
         return {};
     }
@@ -684,7 +760,7 @@ namespace Hooks {
             // 6. quality
             {{"-", "-"}, {"+", "+"}, {"*", "*"}, {"=", "="}, {"☼", "☼"}},
             // 7. decor
-            {{"«", "»"}},
+            {{"<", ">"}},
             // 8. magic
             {{"◄", "►"}},
             // 9. quality (again)
@@ -708,65 +784,26 @@ namespace Hooks {
 
         if (input.size() <= 2) return results;
 
-        // 构建 UTF-8 字符位置信息
-        struct CharPos { size_t offset; size_t len; };
-        std::vector<CharPos> chars;
-        size_t offset = 0;
-        while (offset < input.size()) {
-            unsigned char c = static_cast<unsigned char>(input[offset]);
-            size_t clen = 1;
-            if      (c >= 0xF0) clen = 4;
-            else if (c >= 0xE0) clen = 3;
-            else if (c >= 0xC0) clen = 2;
-            chars.push_back({offset, clen});
-            offset += clen;
-        }
-
-        if (chars.size() <= 2) return results;
-
-        // 累积字节偏移：slens[i] = 第 i 个字符之后的字节位置
-        std::vector<size_t> slens;
-        for (size_t i = 0; i < chars.size(); ++i)
-            slens.push_back(chars[i].offset + chars[i].len);
-
-        auto char_at = [&](size_t idx) -> std::string_view {
-            return std::string_view(input).substr(chars[idx].offset, chars[idx].len);
-        };
-
         const auto& patterns = designation_patterns();
-        std::string_view first_ch = char_at(0);
         std::string_view input_sv = input;
+        char first_ch = input[0];
 
         // --- 第 1 步：查找候选 ---
+        // 使用首/尾字节匹配作为启发式预过滤：
+        // - pl[0] 与 input[0] 比较：designation 前缀均为单字节 ASCII（+ - * = < …）
+        // - pr.back() 与 input[i] 比较：后缀末字节匹配是宽松的启发式，可能对多字节
+        //   UTF-8 字符（如 ☼ ◄ ►）产生多余候选，但第 2 步的全串验证会过滤掉误匹配。
         std::vector<std::string_view> candidates;
         for (const auto& pattern_pairs : patterns) {
             for (const auto& [pl, pr] : pattern_pairs) {
-                if (pl.empty()) continue;
+                if (pl.empty() || pr.empty()) continue;
+                if (pl[0] != first_ch) continue;
 
-                // 比较前缀的第一个 Unicode 字符
-                unsigned char c0 = static_cast<unsigned char>(pl[0]);
-                size_t pl_first_len = 1;
-                if      (c0 >= 0xF0) pl_first_len = 4;
-                else if (c0 >= 0xE0) pl_first_len = 3;
-                else if (c0 >= 0xC0) pl_first_len = 2;
-                if (std::string_view(pl.data(), pl_first_len) != first_ch) continue;
-
-                // 获取后缀的最后一个 Unicode 字符
-                size_t pr_last_off = 0;
-                if (!pr.empty()) {
-                    size_t pos = pr.size() - 1;
-                    while (pos > 0 && (static_cast<unsigned char>(pr[pos]) & 0xC0) == 0x80)
-                        --pos;
-                    pr_last_off = pos;
+                for (size_t i = 2; i < input.size(); ++i) {
+                    if (input[i] == pr.back())
+                        candidates.push_back(input_sv.substr(0, i + 1));
                 }
-                std::string_view pr_last(pr.data() + pr_last_off, pr.size() - pr_last_off);
-
-                // 扫描位置 >= 2，寻找匹配的最后字符
-                for (size_t i = 2; i < chars.size(); ++i) {
-                    if (char_at(i) == pr_last)
-                        candidates.push_back(input_sv.substr(0, slens[i]));
-                }
-                break;  // 每个层级只使用第一个匹配的模式
+                break;
             }
         }
 
@@ -790,11 +827,15 @@ namespace Hooks {
                 }
             }
 
+            if (wrapper_len == 0) continue;
             results.insert({
                 std::string(candidate.substr(0, wrapper_len)),
                 std::string(candidate.substr(candidate.size() - wrapper_len, wrapper_len))
             });
         }
+        // 存在真实标记时移除空标记，调用方可直接遍历无需判断
+        if (results.size() > 1)
+            results.erase({"", ""});
 
         return results;
     }
@@ -869,15 +910,16 @@ namespace Hooks {
         if (identifier.starts_with("::")) {
             return identifier;
         }
+        if (identifier.starts_with("@")) {
+            return identifier;  // Placeholder: local to rule, no namespace scoping
+        }
+        if (identifier.starts_with("#")) {
+            return identifier;  // Builtin token: processed inline, no namespace scoping
+        }
         if (identifier.starts_with("%")) {
             size_t colon = identifier.find(':', 1);
             if (colon == std::string::npos) {
-                std::string result;
-                result.reserve(identifier.size() + 1 + base_ns.size());
-                result += identifier;
-                result += ':';
-                result += base_ns;
-                return result;
+                return identifier;      // Replacer: no namespace scoping
             } else {
                 std::string result;
                 result.reserve((colon + 1) + base_ns.size() + (identifier.size() - colon));
@@ -911,12 +953,14 @@ namespace Hooks {
     ///
     /// @throws std::runtime_error 格式不合法时抛出
     void RulesetsManager::validate_identifier_format(const std::string& identifier) {
+        if (identifier.starts_with("@")) {
+            return;     // Placeholder: local name, no format requirements
+        }
+        if (identifier.starts_with("#")) {
+            return;     // Builtin token: no format requirements
+        }
         if (identifier.starts_with("%")) {
-            if (identifier.find(':') == std::string::npos) {
-                throw std::runtime_error("Replacer identifier must contain ':' separating name and config");
-            }
-            // Replacer 标识符允许任意后续格式，不做进一步校验
-            return;
+            return;     // Replacer: 无需校验格式，resolve_replacer 处理未知类型时返回空
         }
 
         if (identifier != "::" && identifier.ends_with("::"))
@@ -930,16 +974,47 @@ namespace Hooks {
         }
     }
 
-    /// 大小写不敏感的前缀匹配（位运算替代 std::tolower，编译器可 SIMD 展开）
+    /// 大小写不敏感字符相等比较（位运算替代 std::tolower）。
+    /// 作为 matches_literal 和 find_literal_position 的共用 comparator。
+    bool RulesetsManager::ci_char_equal(unsigned char a, unsigned char b) {
+        if (a >= 'A' && a <= 'Z') a |= 0x20;
+        if (b >= 'A' && b <= 'Z') b |= 0x20;
+        return a == b;
+    }
+
+    /// 大小写不敏感的前缀匹配，委托 ci_char_equal 逐字符比较。
     /// @return input 以 pattern 开头时返回 true
     bool RulesetsManager::matches_literal(std::string_view input, std::string_view pattern) {
         if (input.size() < pattern.size()) return false;
-        return std::equal(pattern.begin(), pattern.end(), input.begin(),
-            [](unsigned char a, unsigned char b) {
-                if (a >= 'A' && a <= 'Z') a |= 0x20;
-                if (b >= 'A' && b <= 'Z') b |= 0x20;
-                return a == b;
-            });
+        return std::equal(pattern.begin(), pattern.end(), input.begin(), ci_char_equal);
+    }
+
+    /// 检查标识符是否为 Placeholder（@ 前缀）。
+    /// Placeholder 没有对应规则集，用于捕获任意文本并原样穿透输出。
+    bool RulesetsManager::is_placeholder(std::string_view identifier) {
+        return !identifier.empty() && identifier[0] == '@';
+    }
+
+    /// 检查标识符是否为内建 token（# 前缀）。
+    /// 内建 token 没有对应规则集，由引擎在 token 循环中内联处理。
+    bool RulesetsManager::is_builtin(std::string_view identifier) {
+        return !identifier.empty() && identifier[0] == '#';
+    }
+
+    /// 在文本中查找字面量的第一处大小写不敏感出现位置。
+    /// 使用 std::search + ci_char_equal；placeholder 的后续 Literal
+    /// 是 unique delimiter，只需首次匹配即可。
+    /// @param text    待搜索的文本
+    /// @param literal 要查找的字面量模式
+    /// @return        匹配起始字节偏移，未找到返回 std::nullopt
+    std::optional<size_t> RulesetsManager::find_literal_position(
+        std::string_view text, std::string_view literal)
+    {
+        if (literal.empty()) return 0;
+        auto it = std::search(text.begin(), text.end(),
+                              literal.begin(), literal.end(), ci_char_equal);
+        if (it == text.end()) return std::nullopt;
+        return it - text.begin();
     }
 
     /// 根据翻译模板和绑定结果构建最终翻译文本。
@@ -964,6 +1039,22 @@ namespace Hooks {
             }
         }
         return s;
+    }
+
+    /// 递归打印翻译路径（调试用）。
+    /// 从根节点开始，逐层打印每条规则的匹配和翻译信息。
+    void RulesetsManager::print_translation_path(const ResultTree& node, int indent) {
+        std::string pad(indent * 2, ' ');
+        printf("%s[%s]\n", pad.c_str(), node.identifier.c_str());
+        printf("%s  matched   : \"%s\"\n", pad.c_str(), node.matched.c_str());
+        printf("%s  translated: \"%s\"\n", pad.c_str(), node.translated.c_str());
+        if (!node.remaining.empty())
+            printf("%s  remaining : \"%s\"\n", pad.c_str(), node.remaining.c_str());
+        printf("%s  weight    : %zu\n", pad.c_str(), node.weight());
+        for (const auto& [ref_id, child] : node.children) {
+            printf("%s  ref: %s\n", pad.c_str(), ref_id.c_str());
+            print_translation_path(*child, indent + 1);
+        }
     }
 
 } // namespace Hooks

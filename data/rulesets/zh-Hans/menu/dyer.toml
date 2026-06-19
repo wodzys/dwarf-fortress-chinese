@@ -2,6 +2,17 @@ base = "menu::dyer"
 
 [[rulesets]]
 [rulesets.rules]
+"{main}{tail}" = "{main}{tail}"
+
+[[rulesets]]
+name = "tail"
+optional = true
+[rulesets.rules]
+" (opens menu)" = " (打开菜单)"
+
+[[rulesets]]
+name = "main"
+[rulesets.rules]
 "Dye {kind}" = "染{kind}"
 "Dye {kind} a specific color" = "将{kind}染为特定颜色"
 "Mix dye" = "混合染料"

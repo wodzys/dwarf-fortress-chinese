@@ -1,0 +1,92 @@
+base = "adv::attack"
+
+[[rulesets]]
+[rulesets.rules]
+"{kind}" = "{kind}"
+"{mesage}" = "{mesage}"
+"{hit}" = "{hit}"
+"{grab}" = "{grab}"
+
+[[rulesets]]
+name = "grab"
+[rulesets.rules]
+"Grab with {weapon}" = "用{weapon}缠斗"
+"Grab {::health::bodypart::bodypart_main} with {weapon}" = "用{weapon}缠住{::health::bodypart::bodypart_main}"
+
+[[rulesets]]
+name = "hit"
+[rulesets.rules]
+"{hitname}/{hitway}{weapon}" = "{hitname}/{hitway}{weapon}"
+"scratch" = "抓"
+"bite" = "咬"
+
+[[rulesets]]
+name = "weapon"
+[rulesets.rules]
+"{::items::weapon::singular}" = "{::items::weapon::singular}"
+"{bodyuse}" = "{bodyuse}"
+
+
+[[rulesets]]
+name = "hitname"
+[rulesets.rules]
+"stab" = "戳刺"
+"punch" = "拳击"
+"bash" = "猛击"
+"kick" = "踢踹"
+"hack" = "砍"
+"slap" = "拍打"
+"strike" = "打击"
+"lash" = "鞭打"
+"slash" = "劈"
+
+[[rulesets]]
+name = "hitway"
+optional = true
+[rulesets.rules]
+"shaft/" = "杆/"
+"flat/" = "平面/"
+"pommel/" = "圆头/"
+
+[[rulesets]]
+name = "kind"
+[rulesets.rules]
+"{kind::main}{kind::level}" = "{kind::main}{kind::level}"
+
+[[rulesets]]
+name = "mesage"
+[rulesets.rules]
+"Attack {::health::bodypart::bodypart_main}:" = "攻击{::health::bodypart::bodypart_main}:"
+
+[[rulesets]]
+name = "kind::main"
+[rulesets.rules]
+"Dodge" = "闪避"
+"Block" = "格挡"
+
+[[rulesets]]
+name = "kind::level"
+[rulesets.rules]
+" ({::skills::level})" = " ({::skills::level})"
+
+[[rulesets]]
+name = "bodyuse"
+[rulesets.rules]
+"{side}hand" = "{side}手"
+"{side}{fl}foot" = "{side}{fl}脚"
+"{side}lower arm" = "{side}前臂"
+"{side}upper arm" = "{side}上臂"
+
+[[rulesets]]
+name = "side"
+optional = true
+[rulesets.rules]
+"left " = "左"
+"right " = "右"
+
+[[rulesets]]
+name = "fl"
+optional = true
+[rulesets.rules]
+"front " = "前"
+"rear" = "后"

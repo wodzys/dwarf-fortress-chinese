@@ -1,0 +1,12 @@
+base = "adv::hold"
+
+[[rulesets]]
+[rulesets.rules]
+"Hold {::tiles::walls}{direction}" = "抓住{::tiles::walls}{direction}"
+"Release hold on {::tiles::walls}{direction}" = "松开抓住{::tiles::walls}{direction}的手"
+
+[[rulesets]]
+name = "direction"
+optional = true
+[rulesets.rules]
+"{::adv::direction}" = "{::adv::direction}"

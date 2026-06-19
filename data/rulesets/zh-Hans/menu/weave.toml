@@ -1,0 +1,28 @@
+base = "menu::weave"
+
+[[rulesets]]
+[rulesets.rules]
+"{kind}{main}{goods}" = "将{main}{kind}为{goods}"
+"{kind}{main::special}{goods}" = "{kind}{main::special}{goods}"
+
+[[rulesets]]
+name = "kind"
+[rulesets.rules]
+"Weave" = "纺织"
+
+[[rulesets]]
+name = "main"
+[rulesets.rules]
+" thread into" = "细线"
+" yarn into" = "纱线"
+
+[[rulesets]]
+name = "main::special"
+[rulesets.rules]
+" metal" = "金属"
+
+[[rulesets]]
+name = "goods"
+[rulesets.rules]
+" cloth" = "布匹"
+" silk" = "丝绸"

@@ -3,12 +3,14 @@ base = "menu"
 [[rulesets]]
 [rulesets.rules]
 "{main}{&0}" = "{main}{&0}"
+"{menu_main}{menu_main::tail}" = "{menu_main}{menu_main::tail}"
+"{memorial}" = "{memorial}"
+"{memorial_text}" = "{memorial_text}"
 
 [[rulesets]]
 name = "&0"
 optional = true
 [rulesets.rules]
-" (opens menu)" = " (打开菜单)"
 " (use bars)" = " (使用锭)"
 " (use ore)" = " (使用矿石)"
 
@@ -17,5 +19,61 @@ name = "main"
 [rulesets.rules]
 "{dyer}" = "{dyer}"
 "{make}" = "{make}"
+"{forge}" = "{forge}"
 "{smelt}" = "{smelt}"
 "{kiln}" = "{kiln}"
+"{craft}" = "{craft}"
+"{assemble}" = "{assemble}"
+"{collect}" = "{collect}"
+"{weave}" = "{weave}"
+"{encrust}" = "{encrust}"
+"{glaze}" = "{glaze}"
+
+[[rulesets]]
+name = "menu_main::tail"
+[rulesets.rules]
+" (opens menu)" = " (打开菜单)"
+
+[[rulesets]]
+name = "menu_main"
+[rulesets.rules]
+"{::materials::state::shared::main}" = "{::materials::state::shared::main}"
+"Make instrument piece" = "乐器部件"
+"Make instrument" = "乐器"
+"Weapons and Ammunition" = "武器与弹药"
+"Armor" = "护甲"
+"Furniture" = "家具"
+"Siege equipment" = "围攻装备"
+"Trap components" = "陷阱部件"
+"Other objects" = "其他物体"
+"Metal clothing" = "金属衣物"
+"Engrave memorial slab" = "雕刻纪念石板"
+"cloth" = "布匹"
+"yarn" = "纱线"
+"wood" = "木头"
+
+[[rulesets]]
+name = "memorial"
+[rulesets.rules]
+"{::dwarf_language} (engrave memorial)" = "{::dwarf_language} (雕刻纪念铭文)"
+
+[[rulesets]]
+name = "memorial_text"
+[rulesets.rules]
+"{memorial_text::kind}, {memorial_text::slab}" = "{memorial_text::kind},{memorial_text::slab}"
+
+[[rulesets]]
+name = "memorial_text::kind"
+[rulesets.rules]
+"Not memorialized" = "未被铭记"
+"Entombed" = "已埋葬"
+"Memorialized" = "已铭记"
+"Entombed and memorialized" = "已埋葬和铭记"
+
+[[rulesets]]
+name = "memorial_text::slab"
+[rulesets.rules]
+"no slabs engraved" = "无石碑被雕刻"
+"{#digits} slabs engraved" = "有{#digits}个石碑被雕刻"
+"slab engraved" = "石碑已雕刻"
+

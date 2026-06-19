@@ -1,0 +1,15 @@
+base = "menu::assemble"
+
+[[rulesets]]
+[rulesets.rules]
+"{kind}{main}" = "{kind}{main}"
+
+[[rulesets]]
+name = "kind"
+[rulesets.rules]
+"Assemble" = "组装"
+
+[[rulesets]]
+name = "main"
+[rulesets.rules]
+" {::items::siegeammo}" = "{::items::siegeammo}"
