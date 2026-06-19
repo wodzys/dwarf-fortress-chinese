@@ -80,7 +80,7 @@ namespace Hooks {
                     auto& sentence = activeIt->second;
                     // if ((c == ' ') || parsingSentence || !isWordChar(c) || isupper(c) || !isupper(sentence.content.front())) {
                     if ((c == ' ') || parsingSentence || (!g_isLowerOrDigit[static_cast<unsigned char>(c)] && (sentence.content.size() <= 50)) || 
-                        (sentence.words.size() <= 4) || 
+                        (sentence.words.size() < 4) || 
                         !g_isUpper[static_cast<unsigned char>(sentence.content.front())]) {
                         // Sentence completed, remove trailing space and add to results
                         if (sentence.content.back() == ' ') {
