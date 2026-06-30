@@ -4,6 +4,7 @@
 #include "Core.h"
 #include "Debug.h"
 #include "Error.h"
+#include "MemoryPatcher.h"
 
 #include <fstream>
 
@@ -19,6 +20,11 @@ namespace Config {
     // Returns DFHack installation directory (parent of hack/)
     std::filesystem::path getDFHackPath() {
         static const auto path = Core::getInstance().getHackPath().parent_path();
+        return path;
+    }
+
+    std::filesystem::path getDFPath() {
+        static const auto path = Core::getInstance().p->getPath();
         return path;
     }
 

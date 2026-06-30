@@ -7,7 +7,6 @@
 #include <vector>
 
 namespace DFHack {
-
 namespace DFCH {
 namespace Config {
         std::unordered_map<std::string, std::string> loadConfigFile(const std::filesystem::path& configPath);
@@ -15,6 +14,7 @@ namespace Config {
         std::filesystem::path getDataPath();
         // Returns DFHack installation directory
         std::filesystem::path getDFHackPath();
+        std::filesystem::path getDFPath();
         inline std::filesystem::path getConfigPath() {
             return getDataPath() / "dfch_config.txt";
         }

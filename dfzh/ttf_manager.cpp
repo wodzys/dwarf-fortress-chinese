@@ -42,7 +42,7 @@ namespace Hooks {
         if (sdl2_ttf_handle) {
             return true;
         }
-        const auto sdl2_ttf_dll_path = (Config::getDFHackPath() / "SDL2_ttf.dll").string();
+        const auto sdl2_ttf_dll_path = (Config::getDFPath() / "SDL2_ttf.dll").string();
         sdl2_ttf_handle = LoadLibrary(sdl2_ttf_dll_path.c_str());
         if (!sdl2_ttf_handle) {
             LOGGERMANAGER.getLogger()->error("LoadLibrary:{} failed: {}", sdl2_ttf_dll_path, GetLastError());
