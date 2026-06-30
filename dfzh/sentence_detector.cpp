@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
     void SentenceDetector::init() {

@@ -10,7 +10,7 @@
 namespace fs = std::filesystem;
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 
     static void initThreadPoolOnce() {
         static bool inited = []() {
@@ -27,7 +27,7 @@ namespace DFCH {
         }
 
         fs::path mainPath(main_log_file);
-        fs::path untransPath = mainPath.parent_path() / "dfch_untrans.log";
+        fs::path untransPath = mainPath.parent_path() / "dfzh_untrans.log";
         // === Ensure directory exists ===
         auto ensureDir = [](const fs::path& p) {
             if (!p.parent_path().empty() && !fs::exists(p.parent_path())) {
@@ -49,7 +49,7 @@ namespace DFCH {
         main_sink->set_level(spdlog::level::trace);
 
         m_logger = std::make_shared<spdlog::async_logger>(
-            "dfch_logger", main_sink, spdlog::thread_pool(),
+            "dfzh_logger", main_sink, spdlog::thread_pool(),
             spdlog::async_overflow_policy::overrun_oldest
         );
         m_logger->set_level(log_level);

@@ -18,8 +18,8 @@ Usage
         SDL2_ttf.dll.  Useful after updating mod files in-place.
 
     dfzh_loader -unload
-        Remove installed artifacts only: hack/plugins/dfch.plug.dll and
-        hack/data/dfch/.  Does NOT touch the mod source directory or
+        Remove installed artifacts only: hack/plugins/dfzh.plug.dll and
+        hack/data/dfzh/.  Does NOT touch the mod source directory or
         SDL2_ttf.dll in the DF root.
 
     Both flags are mutually exclusive; supplying no flag prints this help.
@@ -54,7 +54,7 @@ end
 
 -- ============================================================================
 -- Persisted deployment state (via json.open)
--- Stores deploy_state.json in <hack>/data/dfch/ alongside other mod data.
+-- Stores deploy_state.json in <hack>/data/dfzh/ alongside other mod data.
 -- ============================================================================
 local function load_state(data_dst_dir)
     ensure_dir(data_dst_dir)
@@ -132,14 +132,14 @@ end
 
 -- ============================================================================
 -- Phase 1: find and install the plugin DLL.
--- DLL naming convention: dfch-<dfhack_version>.plug.dll
--- Destination: <hack>/plugins/dfch.plug.dll
+-- DLL naming convention: dfzh-<dfhack_version>.plug.dll
+-- Destination: <hack>/plugins/dfzh.plug.dll
 -- Returns: true on success (aborts entire loader on failure).
 -- ============================================================================
 local function phase_install_plugin(plugins_src_dir, plugins_dst_dir, dfhack_version)
-    local dll_name = string.format("dfch-%s.plug.dll", dfhack_version)
+    local dll_name = string.format("dfzh-%s.plug.dll", dfhack_version)
     local dll_src = plugins_src_dir .. '/' .. dll_name
-    local dll_dst = plugins_dst_dir .. '/dfch.plug.dll'
+    local dll_dst = plugins_dst_dir .. '/dfzh.plug.dll'
 
     dfhack.printerr(string.format("[%s] [1/3] Plugin DLL: Searching for %s", GLOBAL_KEY, dll_name))
 
@@ -242,7 +242,7 @@ function run()
     local internal_dir      = mod_path .. 'scripts_modinstalled/internal'
     -- Pre-compute all destination paths
     local plugins_dst_dir   = hack_path .. '/plugins'
-    local data_dst_dir      = hack_path .. '/data/dfch'
+    local data_dst_dir      = hack_path .. '/data/dfzh'
     local sdl_ttf_dst       = df_path .. '/SDL2_ttf.dll'
 
     dfhack.printerr(string.format("[%s] Version     : %s", GLOBAL_KEY, dfhack_version))
@@ -311,8 +311,8 @@ end
 local function unload()
     local hack_path = dfhack.getHackPath():gsub('\\', '/')
 
-    local dll_dst = hack_path .. '/plugins/dfch.plug.dll'
-    local data_dst_dir = hack_path .. '/data/dfch'
+    local dll_dst = hack_path .. '/plugins/dfzh.plug.dll'
+    local data_dst_dir = hack_path .. '/data/dfzh'
 
     if dfhack.filesystem.exists(dll_dst) then
         os.remove(dll_dst)

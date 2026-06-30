@@ -46,7 +46,7 @@ SDL_RenderCopy (via g_sdl2 hooks)     Chinese texture composited onto game displ
 
 | Module | File(s) | Responsibility |
 |--------|---------|----------------|
-| **Plugin Entry** | `dfch.cpp` | DFHack lifecycle management, command handling, hotkey binding |
+| **Plugin Entry** | `dfzh.cpp` | DFHack lifecycle management, command handling, hotkey binding |
 | **Hook Management** | `hooks.cpp/h`, `sdl2_hooks.cpp/h`, `hook_common.h` | Detours attach/detach, runtime loading of ~50 SDL2 function pointers |
 | **ScreenManager** | `screen_manager.cpp/h` | Core dispatcher: screen buffer processing, translation dispatch, texture creation and caching, rendering overlay |
 | **DictManager** | `dict_manager.cpp/h` | CSV dictionary management: exact match + digit normalization + word-level lookup, thread-safe |
@@ -64,7 +64,7 @@ Hooks::init()
   ├─ g_sdl2.loadFunc()              Runtime load of ~50 SDL2 function pointers
   └─ SCREENMANAGER.init()
        ├─ 1. TTFMANAGER.init()      Dynamically load SDL2_ttf.dll, init TTF, load font
-       ├─ 2. DICTIONARY.init()      Load CSV dictionaries (dfch_dict_exact.csv + dfch_dict_word.csv)
+       ├─ 2. DICTIONARY.init()      Load CSV dictionaries (dfzh_dict_exact.csv + dfzh_dict_word.csv)
        ├─ 3. RULESETS.init()        Load TOML ruleset directory (data/rulesets/)
        └─ 4. SENTENCEDETECTOR.init()
 
@@ -75,7 +75,7 @@ Shutdown reverses: SentenceDetector → Rulesets → Dict → TTF
 
 ```
 ├── CMakeLists.txt              # CMake build file
-├── dfch.cpp                    # Plugin main entry point
+├── dfzh.cpp                    # Plugin main entry point
 ├── hooks.cpp / hooks.h         # SDL hook management
 ├── sdl2_hooks.cpp / sdl2_hooks.h  # SDL2 function pointer runtime loading
 ├── hook_common.h               # Hook macros
@@ -90,10 +90,10 @@ Shutdown reverses: SentenceDetector → Rulesets → Dict → TTF
 │   ├── vcpkg.json              # vcpkg dependency manifest (detours, spdlog, tomlplusplus)
 │   └── SDL2_ttf/               # SDL2_ttf download cache
 └── data/                       # Runtime data files
-    ├── dfch_config.txt         # Config file [KEY:VALUE] format
-    ├── dfch_dict_exact.csv     # Exact-match dictionary (key,value,align)
-    ├── dfch_dict_word.csv      # Word-level dictionary
-    ├── dfch_dict_untrans.csv   # Auto-collected untranslated text
+    ├── dfzh_config.txt         # Config file [KEY:VALUE] format
+    ├── dfzh_dict_exact.csv     # Exact-match dictionary (key,value,align)
+    ├── dfzh_dict_word.csv      # Word-level dictionary
+    ├── dfzh_dict_untrans.csv   # Auto-collected untranslated text
     ├── fonts/                  # Chinese font files (MapleMonoNL-CN Bold/Regular/Light, SIL OFL 1.1)
     └── rulesets/               # TOML rulesets (zh-Hans/)
 ```
@@ -102,35 +102,35 @@ Shutdown reverses: SentenceDetector → Rulesets → Dict → TTF
 
 1. Ensure Dwarf Fortress and DFHack are installed
 2. Build the plugin or use a pre-built binary
-3. Copy `dfch.plug.dll` to DFHack's `plugins/` directory
-4. Copy all files from `data/` to `<DF>/hack/data/dfch/`
+3. Copy `dfzh.plug.dll` to DFHack's `plugins/` directory
+4. Copy all files from `data/` to `<DF>/hack/data/dfzh/`
 5. Place `SDL2_ttf.dll` in the game root directory (same level as `Dwarf Fortress.exe`)
-6. Launch the game and run `enable dfch` in the DFHack console
+6. Launch the game and run `enable dfzh` in the DFHack console
 
 ## Usage
 
 1. Launch Dwarf Fortress with DFHack
-2. In the DFHack command line, enter `enable dfch` to start the plugin
+2. In the DFHack command line, enter `enable dfzh` to start the plugin
 3. The plugin will automatically detect and translate on-screen text
 
 ### Hotkeys
 
 | Hotkey | Command | Action |
 |--------|---------|--------|
-| `Ctrl-Alt-L` | `dfch save_untrans` | Export collected untranslated text to log |
-| `Ctrl-Alt-R` | `dfch reload_dicts` | Reload CSV dictionaries + TOML rulesets, clear texture cache |
-| `Ctrl-Alt-K` | `dfch show_ch` | Toggle Chinese translation display on/off |
+| `Ctrl-Alt-L` | `dfzh save_untrans` | Export collected untranslated text to log |
+| `Ctrl-Alt-R` | `dfzh reload_dicts` | Reload CSV dictionaries + TOML rulesets, clear texture cache |
+| `Ctrl-Alt-K` | `dfzh show_ch` | Toggle Chinese translation display on/off |
 
 ## Configuration
 
-Edit `data/dfch_config.txt` (`[KEY:VALUE]` format). All paths are resolved at runtime via `Core::getHackPath()` to relative paths under `<hack>/data/dfch/`:
+Edit `data/dfzh_config.txt` (`[KEY:VALUE]` format). All paths are resolved at runtime via `Core::getHackPath()` to relative paths under `<hack>/data/dfzh/`:
 
 | Key | Description | Default |
 |-----|-------------|---------|
-| `FONT_FILE` | TTF font path (relative to data/dfch/) | `fonts/MapleMonoNL-CN-Bold.ttf` |
-| `LOG_FILE` | Log file path | `logs/dfch.log` |
-| `DICT_EXACT` | Exact-match dictionary file | `dfch_dict_exact.csv` |
-| `DICT_WORD` | Word-level dictionary file | `dfch_dict_word.csv` |
+| `FONT_FILE` | TTF font path (relative to data/dfzh/) | `fonts/MapleMonoNL-CN-Bold.ttf` |
+| `LOG_FILE` | Log file path | `logs/dfzh.log` |
+| `DICT_EXACT` | Exact-match dictionary file | `dfzh_dict_exact.csv` |
+| `DICT_WORD` | Word-level dictionary file | `dfzh_dict_word.csv` |
 
 ## Dictionary Format
 

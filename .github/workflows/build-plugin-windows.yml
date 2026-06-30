@@ -1,4 +1,4 @@
-name: Build dfch plugin (win64)
+name: Build dfzh plugin (win64)
 
 on:
   workflow_call:
@@ -80,9 +80,9 @@ jobs:
 
       - name: Copy plugin into DFHack external plugins tree
         run: |
-          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/dfhack/plugins/external/dfch"
-          Copy-Item -Recurse -Path "${{ github.workspace }}/plugin/*" -Destination "${{ github.workspace }}/dfhack/plugins/external/dfch/"
-          Set-Content -Path "${{ github.workspace }}/dfhack/plugins/external/CMakeLists.txt" -Value "add_subdirectory(dfch)"
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/dfhack/plugins/external/dfzh"
+          Copy-Item -Recurse -Path "${{ github.workspace }}/plugin/*" -Destination "${{ github.workspace }}/dfhack/plugins/external/dfzh/"
+          Set-Content -Path "${{ github.workspace }}/dfhack/plugins/external/CMakeLists.txt" -Value "add_subdirectory(dfzh)"
 
       - name: Get sccache path
         run: |
@@ -92,7 +92,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: win-msvc-dfch-${{ steps.dfhack-tag.outputs.tag }}
+          key: win-msvc-dfzh-${{ steps.dfhack-tag.outputs.tag }}
 
       - uses: ilammy/msvc-dev-cmd@v1
 
@@ -116,7 +116,7 @@ jobs:
         working-directory: ${{ github.workspace }}/dfhack
         env:
           SCCACHE_CACHE_SIZE: 500M
-        run: ninja -C build dfch
+        run: ninja -C build dfzh
 
       - name: Report DFHack version
         run: |
@@ -131,21 +131,21 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: win-msvc-dfch-${{ steps.dfhack-tag.outputs.tag }}
+          key: win-msvc-dfzh-${{ steps.dfhack-tag.outputs.tag }}
 
       - name: Prep artifact
         run: |
           New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/artifact"
-          $plugin = Get-ChildItem -Recurse -Path "${{ github.workspace }}/dfhack/build" -Filter "dfch.plug.dll" | Select-Object -First 1
+          $plugin = Get-ChildItem -Recurse -Path "${{ github.workspace }}/dfhack/build" -Filter "dfzh.plug.dll" | Select-Object -First 1
           if (-not $plugin) {
-            Write-Host "::error::dfch.plug.dll not found in build tree"
+            Write-Host "::error::dfzh.plug.dll not found in build tree"
             exit 1
           }
           $tag = "${{ steps.dfhack-tag.outputs.tag }}"
-          Copy-Item -Path $plugin.FullName -Destination "${{ github.workspace }}/artifact/dfch-${tag}.plug.dll"
+          Copy-Item -Path $plugin.FullName -Destination "${{ github.workspace }}/artifact/dfzh-${tag}.plug.dll"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dfch-win64-${{ steps.dfhack-tag.outputs.tag }}
+          name: dfzh-win64-${{ steps.dfhack-tag.outputs.tag }}
           path: ${{ github.workspace }}/artifact/

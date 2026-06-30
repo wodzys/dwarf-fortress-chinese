@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
-set(DFCH_VERSION "0.8.0")
-project(dfch)
+set(DFZH_VERSION "v0.8.0")
+project(dfzh)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(ARCH_SUBDIR x64)
@@ -73,7 +73,7 @@ endif()
 
 # --- 4. Source file list ---
 set(PROJECT_SRCS
-    dfzh/dfch.cpp
+    dfzh/dfzh.cpp
     dfzh/hooks.cpp
     dfzh/sdl2_hooks.cpp
     dfzh/dict_manager.cpp
@@ -86,13 +86,13 @@ set(PROJECT_SRCS
 )
 
 # --- 5. Create DFHack plugin target ---
-dfhack_plugin(dfch ${PROJECT_SRCS}
+dfhack_plugin(dfzh ${PROJECT_SRCS}
     LINK_LIBRARIES ${DETOURS_LIBRARY}
     COMPILE_FLAGS_MSVC "/utf-8"
 )
 
 # --- 6. Set header paths ---
-target_include_directories(dfch
+target_include_directories(dfzh
     PRIVATE
         ${DETOURS_INCLUDE_DIRS}
         ${SPDLOG_INCLUDE_DIRS}
@@ -103,12 +103,12 @@ target_include_directories(dfch
 )
 
 # --- 7. Compile definitions ---
-target_compile_definitions(dfch PRIVATE FMT_HEADER_ONLY
-    DFCH_VERSION="${DFCH_VERSION}")
+target_compile_definitions(dfzh PRIVATE FMT_HEADER_ONLY
+    DFZH_VERSION="${DFZH_VERSION}")
 
 # --- 8. Install data files ---
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/
-    DESTINATION "${DFHACK_DATA_DESTINATION}/data/dfch"
+    DESTINATION "${DFHACK_DATA_DESTINATION}/data/dfzh"
 )
 
 # --- 9. Install SDL2_ttf.dll to game root directory (critical!) ---

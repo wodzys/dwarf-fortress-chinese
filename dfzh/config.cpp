@@ -9,11 +9,11 @@
 #include <fstream>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Config {
 
     std::filesystem::path getDataPath() {
-        static const auto path = Core::getInstance().getHackPath() / "data" / "dfch";
+        static const auto path = Core::getInstance().getHackPath() / "data" / "dfzh";
         return path;
     }
 

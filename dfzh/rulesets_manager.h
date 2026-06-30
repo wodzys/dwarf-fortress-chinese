@@ -20,7 +20,7 @@
 #include <vector>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
     class RulesetsManager {
@@ -231,8 +231,8 @@ namespace Hooks {
         }
     };
 
-    #define RULESETS DFHack::DFCH::Hooks::RulesetsManager::getInstance()
+    #define RULESETS DFHack::DFZH::Hooks::RulesetsManager::getInstance()
 
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

@@ -6,7 +6,7 @@
 #include <spdlog/spdlog.h>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 
     class LoggerManager {
     public:
@@ -15,7 +15,7 @@ namespace DFCH {
             return instance;
         }
         // 初始化日志系统（必须在使用前调用）
-        void init(const std::string& main_log_file = "logs/dfch.log",
+        void init(const std::string& main_log_file = "logs/dfzh.log",
                 spdlog::level::level_enum log_level = spdlog::level::debug
         );
         
@@ -47,7 +47,7 @@ namespace DFCH {
         std::shared_ptr<spdlog::logger> untrans_logger;
     };
 
-    #define LOGGERMANAGER DFHack::DFCH::LoggerManager::getInstance()
+    #define LOGGERMANAGER DFHack::DFZH::LoggerManager::getInstance()
 
 }
 }

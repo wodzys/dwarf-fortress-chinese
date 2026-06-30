@@ -2,7 +2,7 @@
 #include "sdl2_hooks.h"
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
 // #define DEFINE_ORIG(fn) DEFINE_ORIG_FUNC(fn, fn)

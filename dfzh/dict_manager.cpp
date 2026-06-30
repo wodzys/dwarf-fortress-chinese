@@ -13,7 +13,7 @@
 #include <string_view>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
     DictManager::DictManager() {
         // dict.reserve(30000);
@@ -266,7 +266,7 @@ namespace Hooks {
     }
 
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack
 
 

@@ -20,7 +20,7 @@
 #include <functional> // for std::hash (optional, for custom hash if needed)
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
     // Safely compute proportional width: w_new = (w_old * h_new + h_old/2) / h_old
     // Scaling calculation that preserves aspect ratio
@@ -515,7 +515,7 @@ namespace Hooks {
 
     };
 
-    #define SCREENMANAGER DFHack::DFCH::Hooks::ScreenManager::getInstance()
+    #define SCREENMANAGER DFHack::DFZH::Hooks::ScreenManager::getInstance()
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

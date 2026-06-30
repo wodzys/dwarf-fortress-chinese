@@ -7,7 +7,7 @@
 #include <SDL_syswm.h>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
 // 函数指针类型
@@ -141,5 +141,5 @@ struct SDL2Functions {
 extern SDL2Functions g_sdl2;
 
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

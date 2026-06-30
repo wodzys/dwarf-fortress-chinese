@@ -7,7 +7,7 @@
 #include <windows.h>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
     /* Common hook utility macros */
@@ -23,5 +23,5 @@ namespace Hooks {
     #define INIT_ORIG_FUNC(fn_type, fn_name, module_handle) ORIG_FUNC(fn_name) = (fn_type)(GetProcAddress(module_handle, #fn_name));
 
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

@@ -20,7 +20,7 @@
 #define DETACH_SDL_HOOK(fn_name) DetourDetach(&(PVOID&)(g_sdl2.ORIG_FUNC(fn_name)), (PVOID)(HOOK_FUNC(fn_name)))
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
     /* DF internal text hook function */
     // typedef void(__cdecl* addst)(df::graphic* gps, std::string& str, uint8_t just, uint32_t space);
@@ -33,7 +33,7 @@ namespace Hooks {
     // typedef void(__cdecl* dfhooks_update)();
     typedef bool(__cdecl* dfhooks_sdl_event)(SDL_Event* event);
 
-    std::int64_t dfch_proc_elapsed_us = 0;
+    std::int64_t dfzh_proc_elapsed_us = 0;
     std::int64_t df_frame_elapsed_us = 0;
 
     bool hook_func_init_done = false;
@@ -43,19 +43,19 @@ namespace Hooks {
 
     // SETUP_ORIG_FUNC_OFFSET(addst, OFFSET_MANAGER.getAddress("addst"))
     // void __cdecl HOOK_FUNC(addst)(df::graphic* gps, std::string &str, uint8_t justify, uint32_t space) {
-    //     // fprintf(stdout, "dfch.addst:%s\n", str.c_str());
+    //     // fprintf(stdout, "dfzh.addst:%s\n", str.c_str());
     //     ORIG_FUNC(addst)(gps, str, justify, space);
     // }
 
     // SETUP_ORIG_FUNC_OFFSET(addst_flag, OFFSET_MANAGER.getAddress("addst_flag"))
     // void __cdecl HOOK_FUNC(addst_flag)(df::graphic* gps, std::string &str, uint8_t justify, uint32_t space, uint32_t sflag) {
-    //     fprintf(stdout, "dfch.addst_flag:%s\n", str.c_str());
+    //     fprintf(stdout, "dfzh.addst_flag:%s\n", str.c_str());
     //     ORIG_FUNC(addst_flag)(gps, str, justify, space);
     // }
 
     // SETUP_ORIG_FUNC_OFFSET(top_addst, OFFSET_MANAGER.getAddress("top_addst"))
     // void __cdecl HOOK_FUNC(top_addst)(df::graphic* gps, std::string &str, uint8_t justify, uint32_t space) {
-    //     fprintf(stdout, "dfch.top_addst:%s\n", str.c_str());
+    //     fprintf(stdout, "dfzh.top_addst:%s\n", str.c_str());
     //     ORIG_FUNC(top_addst)(gps, str, justify, space);
     // }
 
@@ -70,10 +70,10 @@ namespace Hooks {
             // ** Elapsed time of TextHook ** //
             auto end = std::chrono::high_resolution_clock::now();
             auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            auto text_proc_time = dfch_proc_elapsed_us;
+            auto text_proc_time = dfzh_proc_elapsed_us;
             auto text_render_time = elapsed_us.count();
-            dfch_proc_elapsed_us = text_proc_time + text_render_time;
-            // LOGGERMANAGER.getLogger()->info("TextHook: {} us, TextRender: {} us, Total: {} us", text_proc_time, text_render_time, dfch_proc_elapsed_us);
+            dfzh_proc_elapsed_us = text_proc_time + text_render_time;
+            // LOGGERMANAGER.getLogger()->info("TextHook: {} us, TextRender: {} us, Total: {} us", text_proc_time, text_render_time, dfzh_proc_elapsed_us);
         }
 
         static auto last_frame_time = std::chrono::high_resolution_clock::now(); // 只初始化一次
@@ -84,7 +84,7 @@ namespace Hooks {
         last_frame_time = current_frame_time;   // 更新 last_frame_time 为当前帧时间
         df_frame_elapsed_us = delta_us.count();
         if (hook_func_init_done && plugin_is_enabled) {
-            SCREENMANAGER.updatePerformanceStatistics(dfch_proc_elapsed_us, df_frame_elapsed_us);
+            SCREENMANAGER.updatePerformanceStatistics(dfzh_proc_elapsed_us, df_frame_elapsed_us);
         }
 
         g_sdl2.ORIG_FUNC(SDL_RenderPresent)(renderer);
@@ -99,7 +99,7 @@ namespace Hooks {
 
             auto end = std::chrono::high_resolution_clock::now();
             auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            dfch_proc_elapsed_us = elapsed_us.count();
+            dfzh_proc_elapsed_us = elapsed_us.count();
         }
     }
 
@@ -144,8 +144,8 @@ namespace Hooks {
 
         auto end = std::chrono::high_resolution_clock::now();
         auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        dfch_init_elapsed_us = elapsed_us.count();
-        LOGGERMANAGER.getLogger()->info("SCREENMANAGER.init elapsed time: {} us", dfch_init_elapsed_us);
+        dfzh_init_elapsed_us = elapsed_us.count();
+        LOGGERMANAGER.getLogger()->info("SCREENMANAGER.init elapsed time: {} us", dfzh_init_elapsed_us);
         hook_func_init_done = true;
         return true;
 
@@ -199,7 +199,7 @@ namespace Hooks {
     }
 
     // void attach_text_hooks() {
-    //     printf("dfch.attach_text_hooks start\n");
+    //     printf("dfzh.attach_text_hooks start\n");
 
     //     // DetourRestoreAfterWith();
     //     // DetourTransactionBegin();
@@ -211,12 +211,12 @@ namespace Hooks {
 
     //     // DetourTransactionCommit();
 
-    //     // printf("dfch.attach_text_hooks done\n");
+    //     // printf("dfzh.attach_text_hooks done\n");
     //     // text_func_hook_done = true;
     // }
 
     void attach_basic_hooks() {
-        printf("dfch.attach_basic_hooks start\n");
+        printf("dfzh.attach_basic_hooks start\n");
 
         DetourRestoreAfterWith();
         DetourTransactionBegin();
@@ -233,11 +233,11 @@ namespace Hooks {
 
         DetourTransactionCommit();
 
-        printf("dfch.attach_basic_hooks done\n");
+        printf("dfzh.attach_basic_hooks done\n");
     }
 
     // void detach_text_hooks() {
-    //     printf("dfch.detach_text_hooks start\n");
+    //     printf("dfzh.detach_text_hooks start\n");
 
     //     // DetourTransactionBegin();
     //     // DetourUpdateThread(GetCurrentThread());
@@ -248,12 +248,12 @@ namespace Hooks {
 
     //     // DetourTransactionCommit();
 
-    //     printf("dfch.detach_text_hooks done\n");
+    //     printf("dfzh.detach_text_hooks done\n");
     //     text_func_hook_done = false;
     // }
 
     void detach_basic_hooks() {
-        printf("dfch.detach_basic_hooks start\n");
+        printf("dfzh.detach_basic_hooks start\n");
 
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
@@ -268,8 +268,8 @@ namespace Hooks {
 
         DetourTransactionCommit();
 
-        printf("dfch.detach_basic_hooks done\n");
+        printf("dfzh.detach_basic_hooks done\n");
     }
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

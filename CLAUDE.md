@@ -19,7 +19,7 @@ Dependencies via `3rdParty/vcpkg.json` (detours, spdlog, tomlplusplus). SDL2_ttf
 
 ## Architecture
 
-Plugin entry point is `dfch.cpp` — standard DFHack lifecycle. On enable, it installs SDL2 function hooks via Detours (`hooks.cpp`). All manager classes are singletons accessed via macros (`SCREENMANAGER`, `DICTIONARY`, `RULESETS`, `TTFMANAGER`, `LOGGERMANAGER`). Everything lives under `DFHack::DFCH::Hooks`.
+Plugin entry point is `dfzh.cpp` — standard DFHack lifecycle. On enable, it installs SDL2 function hooks via Detours (`hooks.cpp`). All manager classes are singletons accessed via macros (`SCREENMANAGER`, `DICTIONARY`, `RULESETS`, `TTFMANAGER`, `LOGGERMANAGER`). Everything lives under `DFHack::DFZH::Hooks`.
 
 ### Source files (10 .cpp, 10 .h/.hpp, ~5500 lines total)
 
@@ -30,7 +30,7 @@ Plugin entry point is `dfch.cpp` — standard DFHack lifecycle. On enable, it in
 | `sentence_detector.cpp/h` | ~350 / 153 | Character-level sentence/word grouping |
 | `dict_manager.cpp/h` | ~317 / 82 | CSV key-value dictionary |
 | `hooks.cpp/h` | ~275 / 30 | Detours attach/detach, hook entry points |
-| `dfch.cpp` | ~224 | Plugin lifecycle (DFHack entry point) |
+| `dfzh.cpp` | ~224 | Plugin lifecycle (DFHack entry point) |
 | `ttf_manager.cpp/h` | ~216 / 88 | SDL2_ttf runtime loading, font rendering |
 | `sdl2_hooks.cpp/h` | ~49 / 145 | ~50 hooked SDL2 function pointers |
 | `hook_common.h` | ~27 | Hook trampoline macros |
@@ -63,16 +63,16 @@ Plugin entry point is `dfch.cpp` — standard DFHack lifecycle. On enable, it in
 ### Config
 
 `config.h/cpp` — runtime path resolution via `Core::getHackPath()` (no compile-time hardcoded paths):
-- `getDataPath()` → `<hack>/data/dfch` (lazy, cached static)
+- `getDataPath()` → `<hack>/data/dfzh` (lazy, cached static)
 - `getDFHackPath()` → DFHack installation root (parent of `hack/`)
 - `getConfig()`, `getFontFile()`, `getLogFile()`, `getDictFile()` all resolve through `getDataPath()`
-- Config file (`dfch_config.txt`) is loaded lazily on first access; `reloadConfig()` forces re-read
+- Config file (`dfzh_config.txt`) is loaded lazily on first access; `reloadConfig()` forces re-read
 
 ### SDL2 hook layer
 
 - `hook_common.h` — macros for declaring hook trampolines (`HOOK_FUNC`, `ORIG_FUNC`, `ATTACH_HOOK`, `DETACH_HOOK`)
 - `sdl2_hooks.h/cpp` — ~50 hooked SDL2 function pointers in `SDL2Functions` struct (`g_sdl2` global)
-- `hooks.cpp` — Detours attach/detach. `HOOK_FUNC(SDL_RenderPresent)` calls ScreenManager. `dfhooks_sdl_event` hook filters events. Frame timing tracked in `dfch_proc_elapsed_us` / `df_frame_elapsed_us`
+- `hooks.cpp` — Detours attach/detach. `HOOK_FUNC(SDL_RenderPresent)` calls ScreenManager. `dfhooks_sdl_event` hook filters events. Frame timing tracked in `dfzh_proc_elapsed_us` / `df_frame_elapsed_us`
 
 ### Initialization order
 
@@ -81,7 +81,7 @@ Plugin entry point is `dfch.cpp` — standard DFHack lifecycle. On enable, it in
 2. `g_sdl2.loadFunc()` — runtime load ~50 SDL2 function pointers
 3. `SCREENMANAGER.init()`:
    a. `TTFMANAGER.init()` — load SDL2_ttf.dll (path via `Config::getDFHackPath()`), init TTF, load font
-   b. `DICTIONARY.init()` — load CSV dicts from `data/dfch_dict_exact.csv` and `data/dfch_dict_word.csv`
+   b. `DICTIONARY.init()` — load CSV dicts from `data/dfzh_dict_exact.csv` and `data/dfzh_dict_word.csv`
    c. `RULESETS.init()` → `load_rule_sets()` — clear + load TOML rules from `data/rulesets/`
    d. `SENTENCEDETECTOR.init()`
 
@@ -89,14 +89,14 @@ Shutdown reverses: SentenceDetector → Rulesets → Dict → TTF.
 
 ## Data files
 
-All under `data/` (installed to `hack/data/dfch/`):
+All under `data/` (installed to `hack/data/dfzh/`):
 
 | File | Purpose |
 |---|---|
-| `dfch_dict_exact.csv` | Exact-match translations (`"key","value","align"` CSV) |
-| `dfch_dict_word.csv` | Word-level translations (used for color spans) |
-| `dfch_dict_untrans.csv` | Auto-collected untranslated texts |
-| `dfch_config.txt` | `[KEY:VALUE]` format: `FONT_FILE`, `LOG_FILE`, `DICT_EXACT`, `DICT_WORD` |
+| `dfzh_dict_exact.csv` | Exact-match translations (`"key","value","align"` CSV) |
+| `dfzh_dict_word.csv` | Word-level translations (used for color spans) |
+| `dfzh_dict_untrans.csv` | Auto-collected untranslated texts |
+| `dfzh_config.txt` | `[KEY:VALUE]` format: `FONT_FILE`, `LOG_FILE`, `DICT_EXACT`, `DICT_WORD` |
 | `rulesets/` | TOML rule files for RulesetsManager. Directory tree maps to `::ns::subns` identifiers. `index.toml` is the root ruleset. Supports `@placeholder` tokens (`{@ph}`), `#builtin` tokens (`#digits`), and `%replacer` tokens (`{%item_designation:ns}`) |
 | `fonts/*.ttf` | Chinese fonts (MapleMonoNL-CN: Bold, Regular, Light) |
 
@@ -131,9 +131,9 @@ GitHub Actions workflows in `.github/workflows/`:
 
 | Key | Command | Action |
 |---|---|---|
-| `Ctrl-Alt-L` | `dfch save_untrans` | Flush collected untranslated texts to log |
-| `Ctrl-Alt-R` | `dfch reload_dicts` | Reload CSV dicts + TOML rulesets, clear texture cache |
-| `Ctrl-Alt-K` | `dfch show_ch` | Toggle translation display on/off |
+| `Ctrl-Alt-L` | `dfzh save_untrans` | Flush collected untranslated texts to log |
+| `Ctrl-Alt-R` | `dfzh reload_dicts` | Reload CSV dicts + TOML rulesets, clear texture cache |
+| `Ctrl-Alt-K` | `dfzh show_ch` | Toggle translation display on/off |
 
 ## Logging
 

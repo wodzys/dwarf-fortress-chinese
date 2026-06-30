@@ -102,7 +102,7 @@ jobs:
         id: download-artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: dfch-win64-*
+          pattern: dfzh-win64-*
           path: artifacts/
           merge-multiple: false
 
@@ -112,7 +112,7 @@ jobs:
         run: |
           project_tag="${{ needs.prepare.outputs.project_tag }}"
           dfhack_tag="${{ needs.prepare.outputs.latest_dfhack_tag }}"
-          pkg_dir="dfch-${project_tag}-${dfhack_tag}"
+          pkg_dir="dfzh-${project_tag}-${dfhack_tag}"
           mkdir -p "release/${pkg_dir}"
           cd "release/${pkg_dir}"
 
@@ -137,15 +137,15 @@ jobs:
           # Plugin DLLs — one per DFHack tag
           mkdir -p scripts_modinstalled/internal/plugins
 
-          for artifact_dir in "${{ github.workspace }}/artifacts/dfch-win64-"*/; do
+          for artifact_dir in "${{ github.workspace }}/artifacts/dfzh-win64-"*/; do
             [ -d "$artifact_dir" ] || continue
-            tag=$(basename "$artifact_dir" | sed 's/^dfch-win64-//')
-            dll_path=$(find "$artifact_dir" -type f -name "dfch-*.plug.dll" | head -1)
+            tag=$(basename "$artifact_dir" | sed 's/^dfzh-win64-//')
+            dll_path=$(find "$artifact_dir" -type f -name "dfzh-*.plug.dll" | head -1)
             if [ -n "$dll_path" ]; then
               cp "$dll_path" "scripts_modinstalled/internal/plugins/$(basename "$dll_path")"
               echo "  ✓ $(basename "$dll_path")"
             else
-              echo "  ⚠ dfch-*.plug.dll not found for tag: ${tag}"
+              echo "  ⚠ dfzh-*.plug.dll not found for tag: ${tag}"
             fi
           done
 
@@ -163,8 +163,8 @@ jobs:
         run: |
           tag="${{ needs.prepare.outputs.project_tag }}"
           dfhack_tag="${{ needs.prepare.outputs.latest_dfhack_tag }}"
-          archive="dfch-${tag}-${dfhack_tag}-win64.zip"
-          pkg_dir="dfch-${tag}-${dfhack_tag}"
+          archive="dfzh-${tag}-${dfhack_tag}-win64.zip"
+          pkg_dir="dfzh-${tag}-${dfhack_tag}"
           zip -r "${archive}" "${pkg_dir}/"
           echo "Created: ${archive}"
 
@@ -174,8 +174,8 @@ jobs:
         with:
           tag: "${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}"
           commit: ${{ needs.prepare.outputs.project_commit_sha }}
-          name: "dfch ${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}"
-          artifacts: "release/dfch-${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}-win64.zip"
+          name: "dfzh ${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}"
+          artifacts: "release/dfzh-${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}-win64.zip"
           artifactErrorsFailBuild: true
           body: |
             ## Dwarf Fortress 中文汉化模组 ${{ needs.prepare.outputs.project_tag }}

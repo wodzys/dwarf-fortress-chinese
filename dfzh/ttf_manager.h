@@ -10,7 +10,7 @@
 #include <cstring>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
     typedef int (SDLCALL * TTF_Init)(void);
     typedef void (SDLCALL * TTF_Quit)(void);
@@ -82,7 +82,7 @@ namespace Hooks {
         void TTFQuit();
     };
 
-    #define TTFMANAGER DFHack::DFCH::Hooks::TTFManager::getInstance()
+    #define TTFMANAGER DFHack::DFZH::Hooks::TTFManager::getInstance()
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

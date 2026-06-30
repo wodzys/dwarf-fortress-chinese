@@ -46,7 +46,7 @@ SDL_RenderCopy (via g_sdl2 hooks)    中文纹理叠加到游戏画面
 
 | 模块 | 文件 | 职责 |
 |------|------|------|
-| **插件入口** | `dfch.cpp` | DFHack 生命周期管理、命令处理、快捷键绑定 |
+| **插件入口** | `dfzh.cpp` | DFHack 生命周期管理、命令处理、快捷键绑定 |
 | **Hook 管理** | `hooks.cpp/h`, `sdl2_hooks.cpp/h`, `hook_common.h` | Detours 挂钩/解挂，~50 个 SDL2 函数指针运行时加载 |
 | **ScreenManager** | `screen_manager.cpp/h` | 核心调度器：屏幕缓冲区处理、翻译调度、纹理创建与缓存、渲染叠加 |
 | **DictManager** | `dict_manager.cpp/h` | CSV 词典管理：精确匹配 + 数字归一化 + 单词级查询，线程安全 |
@@ -64,7 +64,7 @@ Hooks::init()
   ├─ g_sdl2.loadFunc()              运行时加载 ~50 个 SDL2 函数指针
   └─ SCREENMANAGER.init()
        ├─ 1. TTFMANAGER.init()      动态加载 SDL2_ttf.dll，初始化 TTF，加载字体
-       ├─ 2. DICTIONARY.init()      加载 CSV 词典 (dfch_dict_exact.csv + dfch_dict_word.csv)
+       ├─ 2. DICTIONARY.init()      加载 CSV 词典 (dfzh_dict_exact.csv + dfzh_dict_word.csv)
        ├─ 3. RULESETS.init()        加载 TOML 规则集目录 (data/rulesets/)
        └─ 4. SENTENCEDETECTOR.init()
 
@@ -75,7 +75,7 @@ Shutdown 逆序: SentenceDetector → Rulesets → Dict → TTF
 
 ```
 ├── CMakeLists.txt              # CMake 构建文件
-├── dfch.cpp                    # 插件主入口
+├── dfzh.cpp                    # 插件主入口
 ├── hooks.cpp / hooks.h         # SDL 钩子管理
 ├── sdl2_hooks.cpp / sdl2_hooks.h  # SDL2 函数指针运行时加载
 ├── hook_common.h               # Hook 宏定义
@@ -90,10 +90,10 @@ Shutdown 逆序: SentenceDetector → Rulesets → Dict → TTF
 │   ├── vcpkg.json              # vcpkg 依赖声明 (detours, spdlog, tomlplusplus)
 │   └── SDL2_ttf/               # SDL2_ttf 下载缓存
 └── data/                       # 运行时数据文件
-    ├── dfch_config.txt         # 配置文件 [KEY:VALUE] 格式
-    ├── dfch_dict_exact.csv     # 精确匹配词典 (key,value,align)
-    ├── dfch_dict_word.csv      # 单词级词典
-    ├── dfch_dict_untrans.csv   # 自动收集的未翻译文本
+    ├── dfzh_config.txt         # 配置文件 [KEY:VALUE] 格式
+    ├── dfzh_dict_exact.csv     # 精确匹配词典 (key,value,align)
+    ├── dfzh_dict_word.csv      # 单词级词典
+    ├── dfzh_dict_untrans.csv   # 自动收集的未翻译文本
     ├── fonts/                  # 中文字体文件 (MapleMonoNL-CN, SIL OFL 1.1)
     └── rulesets/               # TOML 规则集 (zh-Hans/)
 ```
@@ -102,35 +102,35 @@ Shutdown 逆序: SentenceDetector → Rulesets → Dict → TTF
 
 1. 确保已安装 Dwarf Fortress 和 DFHack
 2. 编译插件或使用预编译版本
-3. 将编译后的 `dfch.plug.dll` 复制到 DFHack 的 `plugins/` 目录
-4. 将 `data/` 目录中的所有文件复制到 `<DF>/hack/data/dfch/`
+3. 将编译后的 `dfzh.plug.dll` 复制到 DFHack 的 `plugins/` 目录
+4. 将 `data/` 目录中的所有文件复制到 `<DF>/hack/data/dfzh/`
 5. 将 `SDL2_ttf.dll` 放置到游戏根目录（与 `Dwarf Fortress.exe` 同级）
-6. 启动游戏，在 DFHack 控制台输入 `enable dfch`
+6. 启动游戏，在 DFHack 控制台输入 `enable dfzh`
 
 ## 使用说明
 
 1. 启动 Dwarf Fortress 和 DFHack
-2. 在 DFHack 命令行中输入 `enable dfch` 启动插件
+2. 在 DFHack 命令行中输入 `enable dfzh` 启动插件
 3. 插件会自动开始识别和翻译游戏界面上的文本
 
 ### 快捷键
 
 | 快捷键 | 命令 | 功能 |
 |--------|------|------|
-| `Ctrl-Alt-L` | `dfch save_untrans` | 导出收集的未翻译文本到日志 |
-| `Ctrl-Alt-R` | `dfch reload_dicts` | 重新加载 CSV 词典 + TOML 规则集，清空纹理缓存 |
-| `Ctrl-Alt-K` | `dfch show_ch` | 切换中文翻译显示开/关 |
+| `Ctrl-Alt-L` | `dfzh save_untrans` | 导出收集的未翻译文本到日志 |
+| `Ctrl-Alt-R` | `dfzh reload_dicts` | 重新加载 CSV 词典 + TOML 规则集，清空纹理缓存 |
+| `Ctrl-Alt-K` | `dfzh show_ch` | 切换中文翻译显示开/关 |
 
 ## 配置说明
 
-编辑 `data/dfch_config.txt`（`[KEY:VALUE]` 格式）。所有路径在运行时通过 `Core::getHackPath()` 解析为 `<hack>/data/dfch/` 下的相对路径：
+编辑 `data/dfzh_config.txt`（`[KEY:VALUE]` 格式）。所有路径在运行时通过 `Core::getHackPath()` 解析为 `<hack>/data/dfzh/` 下的相对路径：
 
 | 配置项 | 说明 | 默认值 |
 |--------|------|--------|
-| `FONT_FILE` | TTF 字体文件路径（相对于 data/dfch/） | `fonts/MapleMonoNL-CN-Bold.ttf` |
-| `LOG_FILE` | 日志文件路径 | `logs/dfch.log` |
-| `DICT_EXACT` | 精确匹配词典文件 | `dfch_dict_exact.csv` |
-| `DICT_WORD` | 单词级词典文件 | `dfch_dict_word.csv` |
+| `FONT_FILE` | TTF 字体文件路径（相对于 data/dfzh/） | `fonts/MapleMonoNL-CN-Bold.ttf` |
+| `LOG_FILE` | 日志文件路径 | `logs/dfzh.log` |
+| `DICT_EXACT` | 精确匹配词典文件 | `dfzh_dict_exact.csv` |
+| `DICT_WORD` | 单词级词典文件 | `dfzh_dict_word.csv` |
 
 ## 词典格式说明
 

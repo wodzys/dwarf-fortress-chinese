@@ -1,5 +1,5 @@
 {
-  "name": "df-chinese",
+  "name": "dfzh-plugin",
   "version": "1.0.0",
   "dependencies": [
     "detours",

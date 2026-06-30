@@ -1,4 +1,4 @@
-name: Build dfch plugin
+name: Build dfzh plugin
 
 on: [push, workflow_dispatch]
 

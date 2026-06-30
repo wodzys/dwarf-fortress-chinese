@@ -4,10 +4,10 @@
 [EARLIEST_COMPATIBLE_NUMERIC_VERSION:0]
 [EARLIEST_COMPATIBLE_DISPLAYED_VERSION:0.0.0]
 [AUTHOR:0x53an]
-[NAME:Dwarf Fortess Chinese]
-[DESCRIPTION:Dwarf Fortess Chinese Mod]
+[NAME:Dwarf Fortress Chinese]
+[DESCRIPTION:Dwarf Fortress Chinese Mod]
 
-[STEAM_TITLE:Dwarf Fortess 汉化]
+[STEAM_TITLE:Dwarf Fortress 汉化]
 
 [STEAM_TAG:dfhack]
 [STEAM_TAG:ui]

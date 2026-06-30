@@ -29,7 +29,7 @@ jobs:
           path: dfhack_tag.txt
           key: dfhack-tag-${{ steps.fetch-dfhack-latest.outputs.tag }}
 
-      - name: Trigger dfch release workflow
+      - name: Trigger dfzh release workflow
         if: steps.restore-known-tag.outputs.cache-hit != 'true'
         id: trigger-release
         run: |

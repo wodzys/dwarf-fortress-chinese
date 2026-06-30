@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Config {
         std::unordered_map<std::string, std::string> loadConfigFile(const std::filesystem::path& configPath);
 
@@ -16,7 +16,7 @@ namespace Config {
         std::filesystem::path getDFHackPath();
         std::filesystem::path getDFPath();
         inline std::filesystem::path getConfigPath() {
-            return getDataPath() / "dfch_config.txt";
+            return getDataPath() / "dfzh_config.txt";
         }
 
         // Lazy loading pattern for config - loads only when first accessed
@@ -33,10 +33,10 @@ namespace Config {
             return getDataPath() / (getConfig().find("FONT_FILE") != getConfig().end() ? getConfig().at("FONT_FILE") : "MapleMonoNL-CN-Bold.ttf");
         }
         inline std::filesystem::path getLogFile() {
-            return getDataPath() / (getConfig().find("LOG_FILE") != getConfig().end() ? getConfig().at("LOG_FILE") : "logs/dfch.log");
+            return getDataPath() / (getConfig().find("LOG_FILE") != getConfig().end() ? getConfig().at("LOG_FILE") : "logs/dfzh.log");
         }
         inline std::filesystem::path getDictFile(std::string dict_type) {
-            return getDataPath() / (getConfig().find(dict_type) != getConfig().end() ? getConfig().at(dict_type) : "dfch_dict_exact.csv");
+            return getDataPath() / (getConfig().find(dict_type) != getConfig().end() ? getConfig().at(dict_type) : "dfzh_dict_exact.csv");
         }
 
     }

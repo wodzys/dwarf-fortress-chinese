@@ -11,7 +11,7 @@
 #include <unordered_set>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
     struct WordData {
         std::string content;
@@ -147,7 +147,7 @@ namespace Hooks {
         }();
     };
 
-    #define SENTENCEDETECTOR DFHack::DFCH::Hooks::SentenceDetector::getInstance()
+    #define SENTENCEDETECTOR DFHack::DFZH::Hooks::SentenceDetector::getInstance()
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

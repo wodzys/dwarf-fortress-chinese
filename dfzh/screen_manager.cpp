@@ -25,7 +25,7 @@
 #include <sstream>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
     constexpr uint32_t BIT1 = 1;
@@ -483,7 +483,7 @@ namespace Hooks {
     }
 
     void ScreenManager::addCHFlag() {
-        static constexpr char kChineseFlagText[] = " -- dfch v" DFCH_VERSION;
+        static constexpr char kChineseFlagText[] = " -- dfzh " DFZH_VERSION;
         static constexpr int kChineseFlagLen = sizeof(kChineseFlagText) - 1;
         static constexpr int kVersionStrLen = sizeof(displayed_version) - 1;
 
@@ -511,7 +511,7 @@ namespace Hooks {
     }
 
     void ScreenManager::showCHFlag(SDL_Renderer * sdl_render) {
-        const std::string ch_str = "DFCH汉化";
+        const std::string ch_str = "汉化";
         int x_ch_flag = 1;
         int y_ch_flag = -3 + dimy;
         SDL_Rect renderRect;

@@ -12,7 +12,7 @@
 
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
     RulesetsManager::RulesetsManager() {
     }
@@ -1058,5 +1058,5 @@ namespace Hooks {
     }
 
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

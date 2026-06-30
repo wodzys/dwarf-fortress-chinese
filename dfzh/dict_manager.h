@@ -12,7 +12,7 @@
 #include <shared_mutex>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
     class DictManager {
@@ -75,8 +75,8 @@ namespace Hooks {
         mutable std::mutex untrans_mutex_;         // protects dict_untrans
     };
 
-    #define DICTIONARY DFHack::DFCH::Hooks::DictManager::getInstance()
+    #define DICTIONARY DFHack::DFZH::Hooks::DictManager::getInstance()
 
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

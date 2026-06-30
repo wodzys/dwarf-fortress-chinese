@@ -17,25 +17,25 @@
 #include <vector>
 #include <cctype>
 
-DFHACK_PLUGIN("dfch");
+DFHACK_PLUGIN("dfzh");
 REQUIRE_GLOBAL(world);
 
 namespace DFHack {
-    // DBG_DECLARE(dfch, log);
+    // DBG_DECLARE(dfzh, log);
     // for configuration-related logging
-    DBG_DECLARE(dfch, status, DebugCategory::LINFO);
+    DBG_DECLARE(dfzh, status, DebugCategory::LINFO);
     // for plugin_onupdate logging
-    DBG_DECLARE(dfch, onupdate, DebugCategory::LINFO);
+    DBG_DECLARE(dfzh, onupdate, DebugCategory::LINFO);
     // for command-related logging
-    DBG_DECLARE(dfch, command, DebugCategory::LINFO);
+    DBG_DECLARE(dfzh, command, DebugCategory::LINFO);
 
-    namespace DFCH {
+    namespace DFZH {
         DFHACK_PLUGIN_IS_ENABLED(is_enabled);
     }
 }
 
 using namespace DFHack;
-using namespace DFHack::DFCH;
+using namespace DFHack::DFZH;
 
 static std::map<std::string, std::string> current_bindings;
 static command_result do_command(color_ostream &out, std::vector<std::string> &parameters);
@@ -86,7 +86,7 @@ DFhackCExport command_result plugin_enable(color_ostream &out, bool enable) {
         }
 
         if (is_enabled) {
-            float duration_ms = static_cast<float>(Hooks::dfch_init_elapsed_us) / 1000.0f;
+            float duration_ms = static_cast<float>(Hooks::dfzh_init_elapsed_us) / 1000.0f;
             out.print("{} enabled | init: {:0.3f} ms | outperforms 99 % of all plugins.\n", plugin_name_upper, duration_ms);
         }
     } else {
@@ -206,9 +206,9 @@ static command_result do_command(color_ostream &out, std::vector<std::string> &p
 }
 
 static void add_binding(color_ostream &out) {
-    current_bindings["Ctrl-Alt-L"] = "dfch save_untrans";
-    current_bindings["Ctrl-Alt-R"] = "dfch reload_dicts";
-    current_bindings["Ctrl-Alt-K"] = "dfch show_ch";
+    current_bindings["Ctrl-Alt-L"] = "dfzh save_untrans";
+    current_bindings["Ctrl-Alt-R"] = "dfzh reload_dicts";
+    current_bindings["Ctrl-Alt-K"] = "dfzh show_ch";
 
     for (const auto& binding : current_bindings) {
         Core::getInstance().getHotkeyManager()->addKeybind(binding.first, binding.second);

@@ -8,7 +8,7 @@
 #include <algorithm>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
     bool TTFManager::init() {
@@ -212,5 +212,5 @@ namespace Hooks {
     }
 
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack

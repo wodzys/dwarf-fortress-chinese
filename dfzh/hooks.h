@@ -5,10 +5,10 @@
 #include <cstdint>
 
 namespace DFHack {
-namespace DFCH {
+namespace DFZH {
 namespace Hooks {
 
-    inline std::int64_t dfch_init_elapsed_us = 0;
+    inline std::int64_t dfzh_init_elapsed_us = 0;
 
     bool init();
     void shutdown();
@@ -26,5 +26,5 @@ namespace Hooks {
     void detach_basic_hooks();
 
 } // namespace Hooks
-} // namespace DFCH
+} // namespace DFZH
 } // namespace DFHack
