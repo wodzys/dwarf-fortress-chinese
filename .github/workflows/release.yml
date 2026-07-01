@@ -13,13 +13,15 @@ on:
         type: number
 
 permissions:
-  contents: write
-  actions: write
+  contents: read
+  actions: read
 
 jobs:
   prepare:
     name: Prepare build matrix
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       dfhack_tags: ${{ steps.fetch-dfhack-tags.outputs.dfhack_tags }}
       dfhack_tags_md: ${{ steps.fetch-dfhack-tags.outputs.dfhack_tags_md }}
@@ -173,12 +175,21 @@ jobs:
           zip -r "${archive}" "${pkg_dir}/"
           echo "Created: ${archive}"
 
+      - name: Create release tag
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          tag="${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}"
+          commit="${{ needs.prepare.outputs.project_commit_sha }}"
+          git tag "$tag" "$commit" -m "Release $tag"
+          git push origin "$tag"
+
       - name: Create or update GitHub release
         id: publish-release
         uses: ncipollo/release-action@v1
         with:
           tag: "${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}"
-          commit: ${{ needs.prepare.outputs.project_commit_sha }}
           name: "dfzh ${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}"
           artifacts: "release/dfzh-${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}-win64.zip"
           artifactErrorsFailBuild: true
