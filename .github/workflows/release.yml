@@ -183,6 +183,8 @@ jobs:
         working-directory: repo
         run: |
           set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           tag="${{ needs.prepare.outputs.project_tag }}-${{ needs.prepare.outputs.latest_dfhack_tag }}"
           commit="${{ needs.prepare.outputs.project_commit_sha }}"
           git tag "$tag" "$commit" -m "Release $tag"
