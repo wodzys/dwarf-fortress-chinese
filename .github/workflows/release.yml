@@ -80,6 +80,9 @@ jobs:
   build:
     name: Build against ${{ matrix.dfhack_tag }}
     needs: prepare
+    permissions:
+      contents: read
+      actions: write
     strategy:
       matrix:
         dfhack_tag: ${{ fromJSON(needs.prepare.outputs.dfhack_tags) }}
