@@ -133,7 +133,7 @@ jobs:
           cp "${{ github.workspace }}/repo/loader/info.txt" .
 
           # Set NUMERIC_VERSION to current release count
-          RELEASE_COUNT=$(gh api repos/${{ github.repository }}/releases --jq 'length' 2>/dev/null || echo "0")
+          RELEASE_COUNT=$(gh api repos/${{ github.repository }}/releases --paginate --jq 'length' 2>/dev/null | awk '{s+=$1} END {print s+0}' || echo "0")
           echo "Release count for NUMERIC_VERSION: ${RELEASE_COUNT}"
           sed -i "s/\[NUMERIC_VERSION:0\]/[NUMERIC_VERSION:${RELEASE_COUNT}]/" info.txt
 
