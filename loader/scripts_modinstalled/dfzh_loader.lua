@@ -272,6 +272,10 @@ end
 -- Returns: true on success, false on failure.
 -- ============================================================================
 local function disable_unload_plugin()
+    local hack_path = dfhack.getHackPath():gsub('\\', '/')
+    local dll_dst = hack_path .. '/plugins/dfzh.plug.dll'
+    if not dfhack.filesystem.exists(dll_dst) then return true end
+
     local out1, r1 = dfhack.run_command_silent('disable', 'dfzh')
     if r1 ~= 0 then
         dfhack.printerr(string.format("[%s] disable dfzh failed (ret=%s): %s", GLOBAL_KEY, tostring(r1), out1))

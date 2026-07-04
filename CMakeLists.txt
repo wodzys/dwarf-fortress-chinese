@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-set(DFZH_VERSION "v0.8.1")
+set(DFZH_VERSION "v0.8.2")
 project(dfzh)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
