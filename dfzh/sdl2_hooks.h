@@ -14,7 +14,7 @@ namespace Hooks {
 /* SDL.dll hook function */
 typedef void(SDLCALL* SDL_GetWindowSize)(SDL_Window * window, int* w, int* h);
 typedef void(SDLCALL* SDL_RenderPresent)(SDL_Renderer * renderer);
-typedef int (SDLCALL * SDL_PollEvent)(SDL_Event * event);
+// typedef int (SDLCALL * SDL_PollEvent)(SDL_Event * event);
 
 typedef int (SDLCALL * SDL_RenderCopy)(SDL_Renderer * renderer, SDL_Texture * texture, const SDL_Rect * srcrect, const SDL_Rect * dstrect);
 typedef SDL_Texture * (SDLCALL * SDL_CreateTextureFromSurface)(SDL_Renderer * renderer, SDL_Surface * surface);
@@ -70,11 +70,12 @@ typedef SDL_bool (SDLCALL * SDL_SetHint)(const char *name, const char *value);
 typedef void (SDLCALL * SDL_free)(void *mem);
 // ---- End extended SDL2 functions ----
 
-
+/*
+// SDL_PollEvent
+*/
 #define FOR_EACH_ORIG_SDL_FUNC(X) \
     X(SDL_GetWindowSize) \
     X(SDL_RenderPresent) \
-    X(SDL_PollEvent) \
     X(SDL_RenderCopy) \
     X(SDL_CreateTextureFromSurface) \
     X(SDL_FreeSurface) \
@@ -124,11 +125,6 @@ typedef void (SDLCALL * SDL_free)(void *mem);
     X(SDL_SetHint) \
     X(SDL_free)
 
-// #define DECLARE_ORIG(fn) DECLARE_ORIG_FUNC(fn, fn)
-// FOR_EACH_ORIG_SDL_FUNC(DECLARE_ORIG)
-// #undef DECLARE_ORIG
-
-// bool LoadSDL2Functions();
 
 struct SDL2Functions {
     #define DEFINE_ORIG(fn) DEFINE_ORIG_FUNC(fn, fn)

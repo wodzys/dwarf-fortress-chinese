@@ -6,10 +6,14 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
-      dfhack_tag_count:
-        description: 'Number of DFHack release tags to build against (default 5)'
+      dfhack_tags:
+        description: 'Comma-separated list of DFHack release tags to build against (e.g. "50.16-r2,50.15-r1"). Overrides dfhack_tag_count when set. The first tag is treated as the latest.'
         required: false
-        default: 5
+        type: string
+      dfhack_tag_count:
+        description: 'Number of DFHack release tags to build against (default 5, ignored if dfhack_tags is set)'
+        required: false
+        default: 1
         type: number
 
 permissions:
@@ -66,9 +70,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          count="${{ github.event.inputs.dfhack_tag_count || 5 }}"
-          tags=$(gh api repos/DFHack/dfhack/releases --jq ".[:${count}].[].tag_name" | \
-            jq -R -s -c 'split("\n")[:-1]')
+          manual_tags="${{ github.event.inputs.dfhack_tags }}"
+          if [ -n "$manual_tags" ]; then
+            # Use manually-specified tags (comma-separated), no API call
+            tags=$(echo "$manual_tags" | tr ',' '\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | jq -R -s -c 'split("\n")[:-1]')
+            echo "Using manually specified DFHack tags"
+          else
+            # Fall back: fetch latest N tags via GitHub API
+            count="${{ github.event.inputs.dfhack_tag_count || 5 }}"
+            tags=$(gh api repos/DFHack/dfhack/releases --jq ".[:${count}].[].tag_name" | \
+              jq -R -s -c 'split("\n")[:-1]')
+            echo "Fetched latest ${count} DFHack tags via API"
+          fi
           latest=$(echo "$tags" | jq -r '.[0]')
           md_tags=$(echo "$tags" | jq -r '.[]' | while read -r t; do echo "- \`$t\`"; done)
           echo "dfhack_tags=$tags" >> "$GITHUB_OUTPUT"
@@ -200,6 +213,11 @@ jobs:
             ### 使用说明
             1. 打开 Steam Workshop，搜索并订阅 **"Dwarf Fortress Chinese Mod"**
             2. 启动游戏，mod 将自动生效
-          allowUpdates: false
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          replacesArtifacts: true
           prerelease: true
           draft: true

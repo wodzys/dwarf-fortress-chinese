@@ -15,7 +15,8 @@ namespace DFZH {
             return instance;
         }
         // 初始化日志系统（必须在使用前调用）
-        void init(const std::string& main_log_file = "logs/dfzh.log",
+        void init(spdlog::level::level_enum log_level = spdlog::level::debug);
+        void init(const std::string& main_log_file,
                 spdlog::level::level_enum log_level = spdlog::level::debug
         );
         
@@ -29,6 +30,8 @@ namespace DFZH {
         void shutdown() {
             if (m_logger) m_logger->flush();
             if (untrans_logger) untrans_logger->flush();
+            spdlog::drop("dfzh_logger");
+            spdlog::drop("untrans_logger");
             m_logger.reset();
             untrans_logger.reset();
             spdlog::shutdown();

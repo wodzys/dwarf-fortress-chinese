@@ -21,12 +21,13 @@ DFHACK_PLUGIN("dfzh");
 REQUIRE_GLOBAL(world);
 
 namespace DFHack {
-    // DBG_DECLARE(dfzh, log);
-    // for configuration-related logging
+    // for lifecycle/status events (init, shutdown, enable, save/load)
+    // LINFO: important but infrequent state changes
     DBG_DECLARE(dfzh, status, DebugCategory::LINFO);
-    // for plugin_onupdate logging
-    DBG_DECLARE(dfzh, onupdate, DebugCategory::LINFO);
-    // for command-related logging
+    // for per-frame update & state change logging (called every frame, very spammy)
+    // LDEBUG: only enable when tracing per-frame behavior
+    DBG_DECLARE(dfzh, onupdate, DebugCategory::LDEBUG);
+    // for command & keybinding logging (user-triggered, moderate frequency)
     DBG_DECLARE(dfzh, command, DebugCategory::LINFO);
 
     namespace DFZH {
@@ -44,7 +45,7 @@ static void remove_binding(color_ostream &out);
 
 // run when the plugin is loaded
 DFhackCExport command_result plugin_init(color_ostream &out, std::vector<PluginCommand> &commands) {
-    DEBUG(status,out).print("initializing %s\n", plugin_name);
+    INFO(status,out).printerr("[{}] plugin_init.\n", plugin_name);
 
     commands.push_back(PluginCommand(
         plugin_name,
@@ -54,7 +55,7 @@ DFhackCExport command_result plugin_init(color_ostream &out, std::vector<PluginC
     ));
 
     if (!Hooks::init()) {
-        DEBUG(status,out).print("%s init failed, plugin not fully loaded\n", plugin_name);
+        ERR(status,out).printerr("[{}] init failed, plugin not fully loaded.\n", plugin_name);
         return CR_FAILURE;
     }
     Hooks::attach();
@@ -63,7 +64,11 @@ DFhackCExport command_result plugin_init(color_ostream &out, std::vector<PluginC
 }
 
 DFhackCExport command_result plugin_shutdown(color_ostream &out) {
-    DEBUG(status,out).print("shutting down {}\n", plugin_name);
+    INFO(status,out).printerr("[{}] plugin_shutdown.\n", plugin_name);
+
+    if (is_enabled) {
+        remove_binding(out);
+    }
 
     Hooks::detach();
     Hooks::shutdown();
@@ -72,7 +77,8 @@ DFhackCExport command_result plugin_shutdown(color_ostream &out) {
 }
 
 DFhackCExport command_result plugin_enable(color_ostream &out, bool enable) {
-    DEBUG(status,out).print("{} from the API\n", enable ? "enabled" : "disabled");
+    DEBUG(status,out).print("[{}] {} from the API.\n", plugin_name, enable ? "enabled" : "disabled");
+
     std::string plugin_name_upper = plugin_name;
     std::transform(plugin_name_upper.begin(), plugin_name_upper.end(), plugin_name_upper.begin(),
                 [](unsigned char c) { return std::toupper(c); });
@@ -87,10 +93,10 @@ DFhackCExport command_result plugin_enable(color_ostream &out, bool enable) {
 
         if (is_enabled) {
             float duration_ms = static_cast<float>(Hooks::dfzh_init_elapsed_us) / 1000.0f;
-            out.print("{} enabled | init: {:0.3f} ms | outperforms 99 % of all plugins.\n", plugin_name_upper, duration_ms);
+            INFO(status,out).print("Enabled | init: {:0.3f} ms | outperforms 99% of all plugins.\n", duration_ms);
         }
     } else {
-        out.print("{} now is {}.\n", plugin_name_upper, enable ? "enabled" : "disabled");
+        INFO(status,out).print("[{}] now is {}.\n", plugin_name, enable ? "enabled" : "disabled");
     }
 
     return CR_OK;
@@ -99,19 +105,19 @@ DFhackCExport command_result plugin_enable(color_ostream &out, bool enable) {
 DFhackCExport command_result plugin_onstatechange(color_ostream &out, state_change_event event) {
     switch (event) {
         case SC_UNKNOWN:
-            DEBUG(status,out).print("gameStateChanged: SC_UNKNOWN\n");
+            TRACE(onupdate,out).printerr("[{}] SC_UNKNOWN\n", plugin_name);
             break;
         case SC_WORLD_LOADED:
-            DEBUG(status,out).print("gameStateChanged: SC_WORLD_LOADED\n");
+            TRACE(onupdate,out).printerr("[{}] SC_WORLD_LOADED\n", plugin_name);
             break;
         case SC_WORLD_UNLOADED:
-            DEBUG(status,out).print("gameStateChanged: SC_WORLD_UNLOADED\n");
+            TRACE(onupdate,out).printerr("[{}] SC_WORLD_UNLOADED\n", plugin_name);
             break;
         case SC_MAP_LOADED:
-            DEBUG(status,out).print("gameStateChanged: SC_MAP_LOADED\n");
+            TRACE(onupdate,out).printerr("[{}] SC_MAP_LOADED\n", plugin_name);
             break;
         case SC_MAP_UNLOADED:
-            DEBUG(status,out).print("gameStateChanged: SC_MAP_UNLOADED\n");
+            TRACE(onupdate,out).printerr("[{}] SC_MAP_UNLOADED\n", plugin_name);
             break;
         case SC_VIEWSCREEN_CHANGED:
         {
@@ -130,24 +136,24 @@ DFhackCExport command_result plugin_onstatechange(color_ostream &out, state_chan
                     }
                 }
             }
-            // DEBUG(status,out).print("gameStateChanged: SC_VIEWSCREEN_CHANGED (%s)\n", name.c_str());
-            // printf("gameStateChanged: SC_VIEWSCREEN_CHANGED (%s)\n", name.c_str());
+
+            TRACE(onupdate,out).printerr("[{}] SC_VIEWSCREEN_CHANGED ({})\n", plugin_name, name.c_str());
 
             Hooks::screen_changed(name);
 
             break;
         }
         case SC_CORE_INITIALIZED:
-            DEBUG(status,out).print("gameStateChanged: SC_CORE_INITIALIZED\n");
+            DEBUG(onupdate,out).printerr("[{}] SC_CORE_INITIALIZED\n", plugin_name);
             break;
         case SC_BEGIN_UNLOAD:
-            DEBUG(status,out).print("gameStateChanged: SC_BEGIN_UNLOAD\n");
+            DEBUG(onupdate,out).printerr("[{}] SC_BEGIN_UNLOAD\n", plugin_name);
             break;
         case SC_PAUSED:
-            DEBUG(status,out).print("gameStateChanged: SC_PAUSED\n");
+            TRACE(onupdate,out).printerr("[{}] SC_PAUSED\n", plugin_name);
             break;
         case SC_UNPAUSED:
-            DEBUG(status,out).print("gameStateChanged: SC_UNPAUSED\n");
+            TRACE(onupdate,out).printerr("[{}] SC_UNPAUSED\n", plugin_name);
             break;
     }
 
@@ -155,22 +161,18 @@ DFhackCExport command_result plugin_onstatechange(color_ostream &out, state_chan
 }
 
 DFhackCExport command_result plugin_onupdate (color_ostream &out) {
-    DEBUG(onupdate,out).print(
-        "onupdate called (run 'debugfilter set info skeleton onupdate' to stop"
-        " seeing these messages)\n");
-    // printf("plugin_onupdate called\n");
 
     return CR_OK;
 }
 
 DFhackCExport command_result plugin_save_site_data (color_ostream &out) {
-    DEBUG(status,out).print("save or unload is imminent; time to persist state for site\n");
+    DEBUG(status,out).printerr("[{}] save or unload is imminent; time to persist state for site.\n", plugin_name);
 
     return CR_OK;
 }
 
 DFhackCExport command_result plugin_save_world_data (color_ostream &out) {
-    DEBUG(status,out).print("save or unload is imminent; time to persist state for world\n");
+    DEBUG(status,out).printerr("[{}] save or unload is imminent; time to persist state for world.\n", plugin_name);
 
     // Call functions in the Persistence module here. If your PersistantDataItem
     // objects are already up to date, then they will get persisted with the
@@ -179,7 +181,7 @@ DFhackCExport command_result plugin_save_world_data (color_ostream &out) {
 }
 
 DFhackCExport command_result plugin_load_world_data (color_ostream &out) {
-    DEBUG(status,out).print("world is loading; time to load world-global persisted state\n");
+    DEBUG(status,out).printerr("[{}] world is loading; time to load world-global persisted state.\n", plugin_name);
 
     // Call functions in the Persistence module here. See
     // persistent_per_save_example.cpp for an example.
@@ -187,7 +189,7 @@ DFhackCExport command_result plugin_load_world_data (color_ostream &out) {
 }
 
 DFhackCExport command_result plugin_load_site_data (color_ostream &out) {
-    DEBUG(status,out).print("site is loading; time to load site-local persisted state\n");
+    DEBUG(status,out).printerr("[{}] site is loading; time to load site-local persisted state.\n", plugin_name);
 
     // Call functions in the Persistence module here. See
     // persistent_per_save_example.cpp for an example.
@@ -195,8 +197,7 @@ DFhackCExport command_result plugin_load_site_data (color_ostream &out) {
 }
 
 static command_result do_command(color_ostream &out, std::vector<std::string> &parameters) {
-    DEBUG(command,out).print("{} command called with {} parameters\n",
-        plugin_name, parameters.size());
+    INFO(command,out).print("do_command with {} parameters\n", parameters.size());
     if (parameters.size() == 0) {
         return CR_OK;
     }
@@ -212,13 +213,13 @@ static void add_binding(color_ostream &out) {
 
     for (const auto& binding : current_bindings) {
         Core::getInstance().getHotkeyManager()->addKeybind(binding.first, binding.second);
-        DEBUG(status,out).print("adding keybinding: {} -> {}\n", binding.first, binding.second);
+        DEBUG(command,out).print("adding keybinding: {} -> {}\n", binding.first, binding.second);
     }
 }
 
 static void remove_binding(color_ostream &out) {
     for (const auto& binding : current_bindings) {
         Core::getInstance().getHotkeyManager()->removeKeybind(binding.first);
-        DEBUG(status,out).print("removing keybinding: {} -> {}\n", binding.first, binding.second);
+        DEBUG(command,out).print("removing keybinding: {} -> {}\n", binding.first, binding.second);
     }
 }

@@ -1,5 +1,6 @@
 
 #include "logger.h"
+#include "config.h"
 
 #include <spdlog/async.h>  // async Logger
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -12,12 +13,16 @@ namespace fs = std::filesystem;
 namespace DFHack {
 namespace DFZH {
 
-    static void initThreadPoolOnce() {
-        static bool inited = []() {
+    static void ensureThreadPool() {
+        // Initialize the spdlog async thread pool if not already running.
+        // After spdlog::shutdown(), the pool is null and will be recreated here.
+        if (!spdlog::thread_pool()) {
             spdlog::init_thread_pool(4096, 1); // 4KB queue, 1 background thread
-            return true;
-        }();
-        (void)inited;
+        }
+    }
+
+    void LoggerManager::init(spdlog::level::level_enum log_level) {
+        init(Config::getLogFile().string(), log_level);
     }
 
     void LoggerManager::init(const std::string& main_log_file,
@@ -37,8 +42,8 @@ namespace DFZH {
         ensureDir(mainPath);
         ensureDir(untransPath);
 
-        // === Initialize spdlog thread pool (once only) ===
-        initThreadPoolOnce();
+        // === Initialize spdlog async thread pool ===
+        ensureThreadPool();
 
         // === Create async + rotating logger max 10MB, keep 3 old files ===
         constexpr size_t max_file_size = 10 * 1024 * 1024; // 10 MB

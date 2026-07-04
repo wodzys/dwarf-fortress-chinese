@@ -108,9 +108,17 @@ namespace Hooks {
 
     void ScreenManager::shutdown() {
         initialized = false;
+        // If screen buffers were swapped (pointers replaced with plugin-owned memory),
+        // restore them back to DF's original pointers before shutdown.
+        // Otherwise, after the DLL is unloaded, DF's gps->screen etc. would dangle.
+        if (screen_buffers_swapped_flag) {
+            restoreScreen();
+            screen_buffers_swapped_flag = false;
+        }
         SENTENCEDETECTOR.shutdown();
         RULESETS.shutdown();
         DICTIONARY.shutdown();
+        textTextureCache.clear();
         TTFMANAGER.shutdown();
     }
     void ScreenManager::screenChanged(std::string screen_name) {

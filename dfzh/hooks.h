@@ -19,10 +19,8 @@ namespace Hooks {
     void attach();
     void detach();
 
-    // void attach_text_hooks();
     void attach_basic_hooks();
 
-    // void detach_text_hooks();
     void detach_basic_hooks();
 
 } // namespace Hooks
