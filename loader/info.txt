@@ -6,6 +6,7 @@
 [AUTHOR:0x53an]
 [NAME:Dwarf Fortress Chinese]
 [DESCRIPTION:Dwarf Fortress Chinese Mod]
+[CONFLICTS_WITH_ID:3613958631]
 
 [STEAM_TITLE:Dwarf Fortress 汉化]
 

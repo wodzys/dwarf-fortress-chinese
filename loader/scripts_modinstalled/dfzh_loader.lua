@@ -439,10 +439,6 @@ local function do_loader(force)
         dfhack.printerr(string.format("[%s] Deployment state saved.", GLOBAL_KEY))
     end
 
-    -- (5) Load + enable
-    if not load_enable_plugin() then
-        return false
-    end
     return true
 end
 
@@ -455,7 +451,10 @@ dfhack.onStateChange[GLOBAL_KEY] = function(sc)
 
         if not state.load_attempted then
             state.load_attempted = true
-            state.loaded = do_loader()
+            if do_loader() then
+                -- (5) Load + enable
+                state.loaded = load_enable_plugin()
+            end
             dfhack.printerr(string.format("[%s] Loader finished, loaded=%s",
                 GLOBAL_KEY, tostring(state.loaded)))
         end
