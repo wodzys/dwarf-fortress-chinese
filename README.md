@@ -1,241 +1,246 @@
-# Dwarf Fortress 中文汉化插件 (df-chinese)
+<!--
+  description: Dwarf Fortress Simplified Chinese Translation Plugin (dfzh). A DFHack-based mod providing real-time full-UI localization for Dwarf Fortress, covering menus, items, creatures, and buildings.
+  keywords: dwarf fortress, 矮人要塞, chinese translation, 汉化, simplified chinese, 简体中文, dfhack, localization, game mod, steam
+-->
 
-> **[English README](README_EN.md)** — English version of this document
+<div align="center">
 
-一个为《Dwarf Fortress》（矮人要塞）开发的中文汉化插件，基于 DFHack 框架实现游戏界面文本的实时中文翻译与渲染。
+# Dwarf Fortress Chinese Translation Plugin (dfzh)
 
-## 项目简介
+> 🏯 矮人要塞汉化 ｜ Dwarf Fortress Simplified Chinese Mod ｜ DFHack 中文翻译插件
 
-该插件作为 DFHack 插件运行，通过内存直读、SDL2 渲染拦截、两层级翻译引擎和 TTF 字体渲染四部分核心技术实现游戏界面汉化。详见下方[技术架构](#技术架构)。
+[![Release](https://img.shields.io/github/v/release/wodzys/dwarf-fortress-chinese?label=version&color=blue)](https://github.com/wodzys/dwarf-fortress-chinese/releases)
+[![Windows Build Status](https://github.com/wodzys/dwarf-fortress-chinese/actions/workflows/build.yml/badge.svg)](https://github.com/wodzys/dwarf-fortress-chinese/actions/workflows/build.yml)
+[![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white)](https://github.com/wodzys/dwarf-fortress-chinese)
+[![DFHack](https://img.shields.io/badge/DFHack-53.14+-purple)](https://github.com/DFHack/dfhack/releases)
+[![Steam Workshop](https://img.shields.io/badge/Steam-Workshop-1a6b3c?logo=steam)](https://steamcommunity.com/sharedfiles/filedetails/?id=3762474859)
+[![License](https://img.shields.io/badge/license-MIT%2FCC--BY--NC%204.0-green)](LICENSE)
 
-## 功能特点
+**[English](README.md) | [简体中文](README.zh-CN.md)**
 
-- **实时文本翻译**：每帧自动检测游戏界面上的英文文本并替换为中文
-- **两层级翻译系统**：CSV 精确匹配词典 + TOML 规则引擎（递归重写、跨命名空间引用、`@placeholder` 文本捕获、循环检测、LRU 记忆化缓存）
-- **句子级文本检测**：字符级分析结合位置、大小写和标点规则，将单字符组合为句子/词语
-- **TTF 中文字体渲染**：动态加载 SDL2_ttf.dll，支持按像素高度匹配中文字体
-- **颜色保留**：翻译过程中保留原始文本的颜色信息，支持动态颜色实时更新
-- **未翻译文本收集**：自动收集未匹配的文本（FIFO，上限 2000），可一键导出
+</div>
 
-## 技术架构
+A **real-time Simplified Chinese localization mod** for **Dwarf Fortress** (Steam version). Built as a **DFHack plugin**, it translates the entire game UI — menus, item descriptions, creature names, building interfaces, and more — on the fly, directly from game memory.
 
-### 每帧渲染流程
+> ⚡ **Quick Install**: Subscribe on [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3762474859) (recommended) or follow the manual steps in [Installation](#-installation).
 
-```
-屏幕缓冲区 (DF 内存: gps.screen / gps.screen_top)
-       │
-       ▼
-SentenceDetector.detectSentences()   字符级检测 → 句子/词语分组
-       │
-       ▼
-ScreenManager::processTranslations()
-  ├─ 1. DICTIONARY.tryTranslate()    CSV 精确匹配 (含数字归一化)
-  └─ 2. RULESETS.translate()         TOML 规则引擎 (递归重写 + @placeholder + 记忆化缓存)
-       │
-       ▼
-TTFManager::RenderBlendedText()      中文 TTF 渲染 → SDL_Surface → SDL_Texture
-       │
-       ▼
-LRU 纹理缓存 (500 条)               命中复用，未命中重新生成
-       │
-       ▼
-SDL_RenderCopy (via g_sdl2 hooks)    中文纹理叠加到游戏画面
-```
+## Previews
 
-### 模块架构
+### 🎮 Title Screen
+<p align="center">
+  <img src=".github/images/title_screen.png" alt="Chinese localized title screen" width="85%">
+</p>
 
-| 模块 | 文件 | 职责 |
-|------|------|------|
-| **插件入口** | `dfzh.cpp` | DFHack 生命周期管理、命令处理、快捷键绑定 |
-| **Hook 管理** | `hooks.cpp/h`, `sdl2_hooks.cpp/h`, `hook_common.h` | Detours 挂钩/解挂，~50 个 SDL2 函数指针运行时加载 |
-| **ScreenManager** | `screen_manager.cpp/h` | 核心调度器：屏幕缓冲区处理、翻译调度、纹理创建与缓存、渲染叠加 |
-| **DictManager** | `dict_manager.cpp/h` | CSV 词典管理：精确匹配 + 数字归一化 + 单词级查询，线程安全 |
-| **RulesetsManager** | `rulesets_manager.cpp/h` | TOML 规则引擎：递归重写、`@placeholder` 文本捕获、跨命名空间引用解析、DFS 循环检测、LRU 记忆化缓存 |
-| **SentenceDetector** | `sentence_detector.cpp/h` | 字符级文本检测：编译期查找表，基于位置/大小写/标点的句子分组 |
-| **TTFManager** | `ttf_manager.cpp/h` | SDL2_ttf 运行时加载、字体匹配、文本→Surface 渲染 |
-| **LoggerManager** | `logger.cpp/h` | spdlog 异步日志：滚动文件（10MB×3）+ 未翻译文本独立日志 |
-| **Config** | `config.cpp/h` | 配置文件解析、路径管理 |
+---
 
-### 初始化顺序
+### 📜 Text & Character Details
 
-```
-Hooks::init()
-  ├─ LOGGERMANAGER.init()
-  ├─ g_sdl2.loadFunc()              运行时加载 ~50 个 SDL2 函数指针
-  └─ SCREENMANAGER.init()
-       ├─ 1. TTFMANAGER.init()      动态加载 SDL2_ttf.dll，初始化 TTF，加载字体
-       ├─ 2. DICTIONARY.init()      加载 CSV 词典 (dfzh_dict_exact.csv + dfzh_dict_word.csv)
-       ├─ 3. RULESETS.init()        加载 TOML 规则集目录 (data/rulesets/)
-       └─ 4. SENTENCEDETECTOR.init()
+| Embark Outpost Description | Dwarf Thoughts & Attributes |
+| :---: | :---: |
+| <img src=".github/images/embark_text.png" alt="Embark text preview" width="100%"> | <img src=".github/images/dwarf_thoughts.png" alt="Dwarf thoughts and attributes" width="100%"> |
 
-Shutdown 逆序: SentenceDetector → Rulesets → Dict → TTF
-```
+---
 
-## 项目结构
+### 📦 Items & Stocks
+<p align="center">
+  <img src=".github/images/stocks_list.png" alt="Chinese localized stocks list" width="50%">
+</p>
 
-```
-├── CMakeLists.txt              # CMake 构建文件
-├── dfzh.cpp                    # 插件主入口
-├── hooks.cpp / hooks.h         # SDL 钩子管理
-├── sdl2_hooks.cpp / sdl2_hooks.h  # SDL2 函数指针运行时加载
-├── hook_common.h               # Hook 宏定义
-├── screen_manager.cpp / .h     # 屏幕管理与渲染调度
-├── dict_manager.cpp / .h       # CSV 词典管理
-├── rulesets_manager.cpp / .h   # TOML 规则引擎
-├── sentence_detector.cpp / .h  # 句子检测器
-├── ttf_manager.cpp / .h        # TTF 字体管理
-├── logger.cpp / .h             # 日志管理
-├── config.cpp / .h             # 配置管理
-├── 3rdParty/                   # 第三方依赖
-│   ├── vcpkg.json              # vcpkg 依赖声明 (detours, spdlog, tomlplusplus)
-│   └── SDL2_ttf/               # SDL2_ttf 下载缓存
-└── data/                       # 运行时数据文件
-    ├── dfzh_config.txt         # 配置文件 [KEY:VALUE] 格式
-    ├── dfzh_dict_exact.csv     # 精确匹配词典 (key,value,align)
-    ├── dfzh_dict_word.csv      # 单词级词典
-    ├── dfzh_dict_untrans.csv   # 自动收集的未翻译文本
-    ├── fonts/                  # 中文字体文件 (MapleMonoNL-CN, SIL OFL 1.1)
-    └── rulesets/               # TOML 规则集 (zh-Hans/)
-```
+---
 
-## 安装方法
+### 🛠️ DFHack Tools
 
-1. 确保已安装 Dwarf Fortress 和 DFHack
-2. 编译插件或使用预编译版本
-3. 将编译后的 `dfzh.plug.dll` 复制到 DFHack 的 `plugins/` 目录
-4. 将 `data/` 目录中的所有文件复制到 `<DF>/hack/data/dfzh/`
-5. 将 `SDL2_ttf.dll` 放置到游戏根目录（与 `Dwarf Fortress.exe` 同级）
-6. 启动游戏，在 DFHack 控制台输入 `enable dfzh`
+DFHack's common features and control panel are also localized for your convenience:
 
-## 使用说明
+| DFHack Launcher | DFHack Control Panel |
+| :---: | :---: |
+| <img src=".github/images/dfhack_launcher.png" alt="DFHack Launcher" width="100%"> | <img src=".github/images/dfhack_control_panel.png" alt="DFHack Control Panel" width="100%"> |
 
-1. 启动 Dwarf Fortress 和 DFHack
-2. 在 DFHack 命令行中输入 `enable dfzh` 启动插件
-3. 插件会自动开始识别和翻译游戏界面上的文本
+---
 
-### 快捷键
+## 📦 Installation
 
-| 快捷键 | 命令 | 功能 |
-|--------|------|------|
-| `Ctrl-Alt-L` | `dfzh save_untrans` | 导出收集的未翻译文本到日志 |
-| `Ctrl-Alt-R` | `dfzh reload_dicts` | 重新加载 CSV 词典 + TOML 规则集，清空纹理缓存 |
-| `Ctrl-Alt-K` | `dfzh show_ch` | 切换中文翻译显示开/关 |
+### Steam Workshop (Recommended)
 
-## 配置说明
+> **Prerequisite**: [DFHack](https://store.steampowered.com/app/2346660) 53.14+ must be installed for Dwarf Fortress.
 
-编辑 `data/dfzh_config.txt`（`[KEY:VALUE]` 格式）。所有路径在运行时通过 `Core::getHackPath()` 解析为 `<hack>/data/dfzh/` 下的相对路径：
+1. Subscribe to the mod on [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3762474859)
+2. Launch Dwarf Fortress with DFHack — the plugin auto-enables (look for **「汉化」** in the bottom-left corner)
+3. Press **Ctrl-Alt-K** to toggle Chinese display
 
-| 配置项 | 说明 | 默认值 |
-|--------|------|--------|
-| `FONT_FILE` | TTF 字体文件路径（相对于 data/dfzh/） | `fonts/MapleMonoNL-CN-Bold.ttf` |
-| `LOG_FILE` | 日志文件路径 | `logs/dfzh.log` |
-| `DICT_EXACT` | 精确匹配词典文件 | `dfzh_dict_exact.csv` |
-| `DICT_WORD` | 单词级词典文件 | `dfzh_dict_word.csv` |
+### Manual Installation
 
-## 词典格式说明
+1. Install [DFHack](https://github.com/DFHack/dfhack/releases) 53.14+ for Dwarf Fortress
+2. Download the latest `dfzh-v*.*.*-**.**-**-win64.zip` from [Releases](https://github.com/wodzys/dwarf-fortress-chinese/releases)
+3. Extract the zip into the DF mods directory:
+   ```
+   C:\Users\<YourUserName>\AppData\Roaming\Bay 12 Games\Dwarf Fortress\mods\
+   ```
+   The extracted folder will be named like `dfzh-v0.8.2-53.15-r1`, with a directory structure like:
+   ```
+   ...\Dwarf Fortress\mods\dfzh-v0.8.2-53.15-r1\info.txt
+   ```
+4. Launch the game — the plugin auto-loads (look for **「汉化」** in the bottom-left corner)
+5. Press **Ctrl-Alt-K** to toggle Chinese display
 
-词典文件采用 CSV 格式，三个字段：
+> **Report issues**: [GitHub Issues](https://github.com/wodzys/dwarf-fortress-chinese/issues)
 
-| 列 | 说明 |
-|----|------|
-| 第一列 | 英文原文 |
-| 第二列 | 中文翻译，支持 `\n` 换行和 `\a#FFFFFFHello\a` 颜色标记 |
-| 第三列 | 控制字符：空=左对齐, `c`=居中, `b`=实时更新, `s`=含转义字符, `d`=`b`+`c` |
+---
 
-示例：
+## ✨ Features
+
+- **Real-time full-UI translation** — menus, items, creatures, buildings, announcements, all translated on every frame
+- **Two-tier translation engine**: CSV exact-match dictionary + TOML recursive rewriting rules for composite text (material + item combinations)
+- **Smart sentence detection** — groups individual characters into sentences using position, case & punctuation rules
+- **TTF Chinese font rendering** — dynamically loads SDL2_ttf, supports multiple font sizes and rendering modes
+- **Color preservation** — retains original text colors, supports dynamic color updates in real time
+- **Untranslated text collection** — auto-captures missed text (FIFO, max 2000 entries) for one-click export
+
+---
+
+## ⌨️ Usage
+
+Once installed (via Steam Workshop or manually), the plugin auto-loads on game launch. Look for **「汉」** in the bottom-left corner, then press **Ctrl-Alt-K** to toggle Chinese display.
+
+### Hotkeys
+
+| Hotkey | Command | Action |
+|--------|---------|--------|
+| `Ctrl-Alt-L` | `dfzh save_untrans` | Export collected untranslated texts to log |
+| `Ctrl-Alt-R` | `dfzh reload_dicts` | Reload dictionaries & rulesets, clear texture cache |
+| `Ctrl-Alt-K` | `dfzh show_ch` | Toggle Chinese translation on/off |
+
+---
+
+## ❓ FAQ
+
+**Q: Does this work with the Steam version of Dwarf Fortress?**  
+A: Yes! The plugin is tested and confirmed working on the Steam version of Dwarf Fortress.
+
+**Q: Do I need to install DFHack separately?**  
+A: Yes. This is a DFHack plugin and requires DFHack 53.14+ to run. See [DFHack installation guide](https://docs.dfhack.org/en/stable/docs/installing.html).
+
+**Q: What content is covered by the translation?**  
+A: The plugin translates on-screen UI text in real time — menus, buttons, item descriptions, creature names, building interfaces, announcements, and most in-game text. Translation data is community-maintained and continuously expanding.
+
+**Q: How can I report translation errors or missing text?**  
+A: Use `Ctrl-Alt-L` to export untranslated text, then open an issue on [GitHub Issues](https://github.com/wodzys/dwarf-fortress-chinese/issues) or contribute via the [Dwarf Fortress Chinese Wiki](https://dfzh.huijiwiki.com/).
+
+**Q: Can I use my own font?**  
+A: Yes. Set `FONT_FILE` in `data/dfzh_config.txt` to your preferred TTF font path.
+
+---
+
+## ⚙️ Configuration
+
+Edit `data/dfzh_config.txt` (`[KEY:VALUE]` format). All paths resolve relative to `<hack>/data/dfzh/`:
+
+| Key | Description | Default |
+|-----|-------------|---------|
+| `FONT_FILE` | TTF font path | `fonts/MapleMonoNL-CN-Bold.ttf` |
+| `LOG_FILE` | Log file path | `logs/dfzh.log` |
+| `DICT_EXACT` | Exact-match dictionary | `dfzh_dict_exact.csv` |
+| `DICT_WORD` | Word-level dictionary | `dfzh_dict_word.csv` |
+
+### Dictionary Format
+
+CSV with three fields: `"english","translation","control"`. Example:
+
 ```csv
 "Continue Playing","继续游戏",
 "DFHack Launcher","DFHack启动器","c"
 "Hello World","你好 \a#FF0000世界\a","s"
 ```
 
-## TOML 规则集格式说明
+See [Dictionary Format](#) for control character details.
 
-规则集文件位于 `data/rulesets/zh-Hans/`，采用 TOML 格式。目录树映射为 `::ns::subns` 命名空间标识符，`index.toml` 为根规则集。
+---
 
-### Token 类型
+<details>
+<summary><b>🔧 Technical Architecture</b> (click to expand)</summary>
 
-| Token | 语法 | 说明 |
-|-------|------|------|
-| **Literal** | 纯文本 | 大小写不敏感前缀匹配 |
-| **Reference** | `{::ns::rule}` | 递归引用其他命名空间的规则 |
-| **Builtin** | `{#digits}` | 内置替换器（如 `#digits` 匹配首部连续 ASCII 数字） |
-| **Placeholder** | `{@name}` | 捕获任意文本并原样穿透输出，用于模板字符串翻译 |
-| **Replacer** | `{%name:ns}` | 特殊处理 token（如 `%item_designation`），剥离标记后委托到指定命名空间翻译，再恢复标记包装 |
+### Per-Frame Rendering Pipeline
 
-### Placeholder 示例
-
-```toml
-# 捕获要塞名称并保留在输出中
-"A new chapter of dwarven history begins here at this place, {@ph}. Strike the earth!" = "矮人历史的新篇章在这里{@ph}开始书写. 开山掘地！"
+```
+Screen Buffer (DF Memory: gps.screen / gps.screen_top)
+       │
+       ▼
+SentenceDetector.detectSentences()    Char-level → sentence/word grouping
+       │
+       ▼
+ScreenManager::processTranslations()
+  ├─ 1. DICTIONARY.tryTranslate()     CSV exact match (digit normalization)
+  └─ 2. RULESETS.translate()          TOML rule engine (recursive rewrite + @placeholder)
+       │
+       ▼
+TTFManager::RenderBlendedText()       Chinese TTF → SDL_Surface → SDL_Texture
+       │
+       ▼
+LRU Texture Cache (500 entries)       Hit → reuse, Miss → regenerate
+       │
+       ▼
+SDL_RenderCopy (via g_sdl2 hooks)     Composite onto game display
 ```
 
-Placeholder 以 `@` 开头，仅作用于当前规则内部（不解析为命名空间引用）。若其后紧跟 Literal token，则该 Literal 作为分隔符确定捕获边界；若为最后一个 token，则消费全部剩余文本。
+### Key Modules
 
-### Replacer 说明
+| Module | Responsibility |
+|--------|----------------|
+| **ScreenManager** | Core dispatcher: buffer processing, translation dispatch, texture cache & rendering |
+| **DictManager** | CSV dictionary: exact match + digit normalization, thread-safe |
+| **RulesetsManager** | TOML rule engine: recursive rewriting, `@placeholder` capture, cycle detection, LRU memoization |
+| **SentenceDetector** | Char-level text detection using compile-time lookup tables |
+| **TTFManager** | Runtime SDL2_ttf loading, font matching by pixel height |
+| **LoggerManager** | spdlog async logger: rotating file (10MB×3) + untranslated text log |
 
-Replacer 以 `%` 开头，对匹配文本执行特殊预处理后再翻译。当前支持的 Replacer：
+</details>
 
-| Replacer | 格式 | 说明 |
-|----------|------|------|
-| `%item_designation` | `{%item_designation:ns}` 或 `{%item_designation:ns:subns}` | 匹配物品标记（品质符号 `-` `+` `*` `=` `☼`、磨损 `x` `X` `XX`、火焰 `‼`、所有权 `$`、异地 `()`、无主 `{}`、装饰 `<>`、魔法 `◄►`），剥离标记后委托到指定命名空间翻译内部文本，最后恢复标记包装 |
+---
 
-## 构建
+## 🏗️ Building from Source
 
-DFHack 插件需在 DFHack 源码树中编译，完整环境搭建参考 [DFHack 编译指南 — Windows](https://docs.dfhack.org/en/stable/docs/dev/compile/Compile.html#windows)。
+DFHack plugins must be compiled within the DFHack source tree:
 
-额外依赖（vcpkg manifest 管理）：detours、spdlog、tomlplusplus；SDL2_ttf 在 CMake 配置时自动下载。
-
-### 编译步骤
-
-1. 将插件目录放置到 DFHack 源码的 `plugins/df_chinese/`
-2. 在 DFHack 仓库中，编辑 `build/win64/DF_PATH.txt` 写入游戏安装路径
-3. 打开 **x64 Native Tools Command Prompt for VS 2022**，依次执行：
+1. Place this directory at `plugins/df_chinese/` inside the DFHack source tree
+2. Edit `build/win64/DF_PATH.txt` to point to your DF installation
+3. Open **x64 Native Tools Command Prompt for VS 2022** and run:
 
 ```batch
 cd build\win64
-
-generate-MSVC-gui.bat    :: CMake 配置（生成 VC2022 工程）
-build-debug.bat          :: 编译
-install-debug.bat        :: 安装到游戏目录（含 data/ 和 SDL2_ttf.dll）
+generate-MSVC-gui.bat
+build-debug.bat
+install-debug.bat
 ```
 
-> 也可使用 `build-release.bat` + `install-release.bat` 编译 Release 版本。
+Dependencies (vcpkg-managed): detours, spdlog, tomlplusplus. SDL2_ttf downloaded at configure time.
 
-## 致谢
+See [DFHack Compilation Guide](https://docs.dfhack.org/en/stable/docs/dev/compile/Compile.html#windows) for full environment setup.
 
-### 算法参考
+---
 
-本项目的规则翻译算法（RulesetsManager）受以下开源项目启发并参考其设计：
+## 🙏 Acknowledgments
 
-- [DFI18n/dfi18n](https://github.com/DFI18n/dfi18n) — 源码路径: `crates/rule_based_translator`，许可协议: MIT
+### Algorithm Reference
+The rule-based translation engine (RulesetsManager) is an independent C++ reimplementation inspired by [DFI18n/dfi18n](https://github.com/DFI18n/dfi18n) (MIT). Optimizations include LRU memoization cache, compile-time lookup tables, and heterogeneous lookup.
 
-该模块在 C++ 中独立重新实现，并进行了性能优化（LRU 记忆化缓存、编译期查找表、heterogeneous lookup）与 C++ 惯用法改进。开发过程中由 [Claude Code](https://claude.ai/code) 与 [DeepSeek](https://www.deepseek.com/) 辅助完成，所有代码均经过人工审核。
+### Translation Data
+Copyright of the [Dwarf Fortress Chinese Wiki](https://dfzh.huijiwiki.com/) translation group, licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.en).
 
-### 翻译数据
-
-TOML 规则集中的翻译数据版权归属于[矮人要塞中文维基](https://dfzh.huijiwiki.com/)翻译组，在 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans) 协议下授权使用。
-
-### 第三方库
-
-| 库 | 许可 |
-|----|------|
+### Third-Party Libraries
+| Library | License |
+|---------|---------|
 | [spdlog](https://github.com/gabime/spdlog) | MIT |
 | [toml++](https://github.com/marzer/tomlplusplus) | MIT |
 | [Microsoft Detours](https://github.com/microsoft/Detours) | MIT |
 | [SDL2_ttf](https://github.com/libsdl-org/SDL_ttf) | zlib |
-| [Maple Mono NF CN](https://github.com/subframe7536/maple-font) | SIL Open Font License 1.1 |
+| [Maple Mono NF CN](https://github.com/subframe7536/maple-font) | SIL OFL 1.1 |
 
-## 许可证
+---
 
-本项目源代码（C++ 源码文件）基于 **MIT** 许可证发布。
+## 📄 License
+
+Source code (C++) — **MIT**.  
+Translation data (`data/rulesets/`) — **CC BY-NC 4.0**.  
+Fonts (`data/fonts/`) — **SIL Open Font License 1.1**.  
 
 Copyright (c) 2026 0x53an
-
-本项目的不同组件适用不同的许可协议：
-
-- `src/` — MIT
-- `data/rulesets/` — CC BY-NC 4.0（矮人要塞中文维基翻译组）
-- `data/fonts/` — SIL Open Font License 1.1（Maple Mono Project Authors）
-
-详见各子目录中的 `LICENSE` 文件。
