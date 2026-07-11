@@ -9,7 +9,7 @@
 
 > 🏯 矮人要塞汉化 ｜ Dwarf Fortress Simplified Chinese Mod ｜ DFHack 中文翻译插件
 
-[![Release](https://img.shields.io/github/v/release/wodzys/dwarf-fortress-chinese?label=version&color=blue)](https://github.com/wodzys/dwarf-fortress-chinese/releases)
+[![Release](https://img.shields.io/github/v/tag/wodzys/dwarf-fortress-chinese?label=version&color=blue)](https://github.com/wodzys/dwarf-fortress-chinese/releases)
 [![Windows Build Status](https://github.com/wodzys/dwarf-fortress-chinese/actions/workflows/build.yml/badge.svg)](https://github.com/wodzys/dwarf-fortress-chinese/actions/workflows/build.yml)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white)](https://github.com/wodzys/dwarf-fortress-chinese)
 [![DFHack](https://img.shields.io/badge/DFHack-53.14+-purple)](https://github.com/DFHack/dfhack/releases)
@@ -28,7 +28,7 @@ A **real-time Simplified Chinese localization mod** for **Dwarf Fortress** (Stea
 
 ### 🎮 Title Screen
 <p align="center">
-  <img src=".github/images/title_screen.png" alt="Chinese localized title screen" width="85%">
+  <img src=".github/images/title_screen.png" alt="Chinese localized title screen" width="100%">
 </p>
 
 ---

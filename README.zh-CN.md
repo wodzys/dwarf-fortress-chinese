@@ -9,7 +9,7 @@
 
 > 🏯 矮人要塞汉化 ｜ Dwarf Fortress Simplified Chinese Mod ｜ DFHack 中文翻译插件
 
-[![Release](https://img.shields.io/github/v/release/wodzys/dwarf-fortress-chinese?label=版本&color=blue)](https://github.com/wodzys/dwarf-fortress-chinese/releases)
+[![Release](https://img.shields.io/github/v/tag/wodzys/dwarf-fortress-chinese?label=版本&color=blue)](https://github.com/wodzys/dwarf-fortress-chinese/releases)
 [![Windows Build](https://github.com/wodzys/dwarf-fortress-chinese/actions/workflows/build.yml/badge.svg)](https://github.com/wodzys/dwarf-fortress-chinese/actions/workflows/build.yml)
 [![平台](https://img.shields.io/badge/平台-Windows-0078D6?logo=windows&logoColor=white)](https://github.com/wodzys/dwarf-fortress-chinese)
 [![DFHack](https://img.shields.io/badge/DFHack-53.14+-purple)](https://github.com/DFHack/dfhack/releases)
@@ -28,7 +28,7 @@
 
 ### 🎮 游戏主界面
 <p align="center">
-  <img src=".github/images/title_screen.png" alt="游戏主界面汉化" width="85%">
+  <img src=".github/images/title_screen.png" alt="游戏主界面汉化" width="100%">
 </p>
 
 ---
