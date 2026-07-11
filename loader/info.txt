@@ -8,8 +8,8 @@
 [DESCRIPTION:Dwarf Fortress Chinese Mod]
 [CONFLICTS_WITH_ID:3613958631]
 
-[STEAM_TITLE:Dwarf Fortress 汉化]
-
+[STEAM_TITLE:Dwarf Fortress 简体中文汉化模组 (BETA)]
+[STEAM_CHANGELOG:解决了一些已知问题。]
 [STEAM_TAG:dfhack]
 [STEAM_TAG:ui]
 
