@@ -7,7 +7,7 @@
 
 # Dwarf Fortress 中文汉化插件 (dfzh)
 
-> 🏯 矮人要塞汉化 ｜ Dwarf Fortress Simplified Chinese Mod ｜ DFHack 中文翻译插件
+> ⛏️🏰 矮人要塞汉化 ｜ Dwarf Fortress Simplified Chinese Mod ｜ DFHack 中文翻译插件
 
 [![Release](https://img.shields.io/github/v/tag/wodzys/dwarf-fortress-chinese?label=版本&color=blue)](https://github.com/wodzys/dwarf-fortress-chinese/releases)
 [![Windows Build](https://github.com/wodzys/dwarf-fortress-chinese/actions/workflows/build.yml/badge.svg)](https://github.com/wodzys/dwarf-fortress-chinese/actions/workflows/build.yml)
