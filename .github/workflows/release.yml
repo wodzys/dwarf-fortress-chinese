@@ -44,10 +44,8 @@ jobs:
             if ! [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
                 echo "project_tag=" >> "$GITHUB_OUTPUT"
                 echo "project_commit_sha=" >> "$GITHUB_OUTPUT"
-                cat >> "$GITHUB_STEP_SUMMARY" <<-EOF
-                ## ⏭️ Workflow skipped
-                Tag \`$tag\` does not match the required semver pattern \`v\d+\.\d+\.\d+\$\`. No build or release will be created.
-                EOF
+                echo "## ⏭️ Workflow skipped" >> "$GITHUB_STEP_SUMMARY"
+                echo "Tag \`$tag\` does not match the required semver pattern \`v\\d+\\.\\d+\\.\\d+\\$\`. No build or release will be created." >> "$GITHUB_STEP_SUMMARY"
                 exit 0
             fi
           else
