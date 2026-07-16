@@ -38,6 +38,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: Write DFHack tag file
+        if: steps.restore-known-tag.outputs.cache-hit != 'true'
+        run: |
+          echo "${{ steps.fetch-dfhack-latest.outputs.tag }}" > dfhack_tag.txt
+
       - name: Save DFHack tag for next run
         if: steps.restore-known-tag.outputs.cache-hit != 'true'
         id: save-known-tag
