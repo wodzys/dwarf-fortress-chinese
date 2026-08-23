@@ -13,7 +13,7 @@ on:
       dfhack_tag_count:
         description: 'Number of DFHack release tags to build against (default 5, ignored if dfhack_tags is set)'
         required: false
-        default: 1
+        default: 5
         type: number
 
 permissions:
@@ -228,4 +228,4 @@ jobs:
           omitPrereleaseDuringUpdate: true
           replacesArtifacts: true
           prerelease: true
-          draft: true
+          draft: false
