@@ -8,6 +8,7 @@
 
 #include "DFHackVersion.h"
 
+#include "df/global_objects.h"
 #include "df/renderer.h"
 #include "df/enabler.h"
 #include "df/graphic.h"
